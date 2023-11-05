@@ -1,0 +1,153 @@
+%% intro.tex
+%%
+%% Copyright 2017 Evandro Coan
+%% Copyright 2012-2016 by abnTeX2 group at http://www.abntex.net.br/
+%%
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+%%
+%% This work has the LPPL maintenance status `maintained'.
+%% The Current Maintainer of this work is the Evandro Coan.
+%%
+%% The last Maintainer of this work was the abnTeX2 team, led
+%% by Lauro César Araujo. Further information are available on
+%% https://www.abntex.net.br/
+%%
+%% This work consists of a bunch of files. But originally there ware 3 files
+%% which are renamed as follows:
+%% Renamed the `abntex2-modelo-include-comandos` to `chapters/chapter_1.tex`
+%% Renamed the `abntex2-modelo-trabalho-academico.tex` to `chapters/intro.tex`
+%% Renamed the `abntex2-modelo-references.bib` to `aftertext/modelo-ufsc-references.bib`
+%%
+%% This file was originally the main template file, however this main file was
+%% split into several new files, which are respectively drastically changed,
+%% except this files which contains most of the main documentation message.
+%%
+
+% ------------------------------------------------------------------------
+% ------------------------------------------------------------------------
+% abnTeX2: Modelo de Trabalho Academico (tese de doutorado, dissertacao de
+% mestrado e trabalhos monograficos em geral) em conformidade com
+% ABNT NBR 14724:2011: Informacao e documentacao - Trabalhos academicos -
+% Apresentacao
+% ------------------------------------------------------------------------
+% ------------------------------------------------------------------------
+
+% The \phantomsection command is needed to create a link to a place in the document that is not a
+% figure, equation, table, section, subsection, chapter, etc.
+% https://tex.stackexchange.com/questions/44088/when-do-i-need-to-invoke-phantomsection
+\phantomsection
+
+% Multiple-language document - babel - selectlanguage vs begin/end{otherlanguage}
+% https://tex.stackexchange.com/questions/36526/multiple-language-document-babel-selectlanguage-vs-begin-endotherlanguage
+\begin{otherlanguage*}{english}
+
+% The \phantomsection command is needed to create a link to a place in the document that is not a
+% figure, equation, table, section, subsection, chapter, etc.
+% https://tex.stackexchange.com/questions/44088/when-do-i-need-to-invoke-phantomsection
+\phantomsection
+
+% Multiple-language document - babel - selectlanguage vs begin/end{otherlanguage}
+% https://tex.stackexchange.com/questions/36526/multiple-language-document-babel-selectlanguage-vs-begin-endotherlanguage
+\begin{otherlanguage*}{brazil}
+
+% https://tex.stackexchange.com/questions/5076/is-it-possible-to-keep-my-translation-together-with-original-text
+
+\chapter{\lang{Introduction}{Introdução}} \label{cap:introducao}
+
+% What does [t] and [ht] mean?
+% https://tex.stackexchange.com/questions/8652/what-does-t-and-ht-mean
+%
+% How can I get rid of the LaTeX warning: Float too large for page?
+% https://tex.stackexchange.com/questions/36252/how-can-i-get-rid-of-the-latex-warning-float-too-large-for-page
+%
+% "warning: Text page X contains only floats" How to suppress this warning?
+% https://tex.stackexchange.com/questions/223149/warning-text-page-x-contains-only-floats-how-to-suppress-this-warning
+%
+% Make a table span multiple pages
+% https://tex.stackexchange.com/questions/26462/make-a-table-span-multiple-pages
+%
+% How to make the longtable to work with centering & caption on memoir class?
+% https://tex.stackexchange.com/questions/386541/how-to-make-the-longtable-to-work-with-centering-caption-on-memoir-class
+%
+% How to fix this Package array Error: Only one column-spec allowed?
+% https://tex.stackexchange.com/questions/367069/how-to-fix-this-package-array-error-only-one-column-spec-allowed
+%
+% How to auto adjust my last table column width, and why is there Underfull \vbox badness on this table?
+% https://tex.stackexchange.com/questions/387238/how-to-auto-adjust-my-last-table-column-width-and-why-is-there-underfull-vbox/387251
+
+Com o crescimento de técnicas de utilização de microsserviços e computação em
+nuvem, se criou uma alta necessidade para a alta disponibilidade dos serviços
+\cite{vayghan2021kubernetes}. A virtualização leve através da utilização de
+contêineres, desenvolvidos em cima das funcionalidades do Linux, possibilitou
+uma melhoria no processo de disponibilização destes microsserviços na nuvem
+\cite{laadan2010linux}. Desta forma, para facilitar o processo de gerenciamento
+e comunicação entre diversos contêineres de microsserviços na nuvem, aplicações
+com este intuito foram criadas \cite{vayghan2021kubernetes}, elas são chamadas
+de orquestradores de contêineres, entre elas a mais popular é o Kubernetes
+\cite{kubernetes}.
+
+Em geral, os orquestradores de contêineres proveem um grande ferramental para a
+replicação, recuperação e manutenção de alta disponibilidade para os contêineres,
+suprindo a maioria das necessidades que aplicações sem estado de memória interna,
+do tipo \textit{Stateless}, possuem \cite{vayghan2021kubernetes}. Entretanto,
+quando precisamos de aplicações que possuam estado em memória, aplicações
+\textit{Stateful}, e, que este estado seja importante para as futuras execuções
+da aplicação, falta suporte nos orquestradores de contêineres, principalmente em
+adoção das práticas de \textit{Checkpoint/Restore} \cite{muller2022architecture}
+para o melhoria do tempo da recuperação de contêineres com falhas. Este tipo de
+técnica permite salvar o estado de memória em uma nova imagem para recuperá-la
+mais tarde. Embora, orquestradores de contêineres possuam suporte para aplicações
+com estado em armazenamento de dados, como o StatefulSet no Kubernetes, não existe
+suporte nativo para o estado em memória da aplicação \cite{tran2022proactive}.
+
+Desta forma, este trabalho propõe uma aplicação transparente para realizar o
+\textit{Checkpoint/Restore} de aplicações \textit{Stateful} executando em
+contêineres no Kubernetes. Esta aplicação irá possibilitar a tolerância a falhas
+das aplicações com estado e também melhorar a alta disponibilidade destes serviços,
+melhorando também a qualidade de serviço de aplicações distribuídas em nuvem.
+
+\section{Objetivos}
+
+\subsection{Objetivo Geral}
+
+Desenvolver uma aplicação transparente para realização de \textit{Checkpoint/Restore}
+de aplicações de contêineres \textit{Stateful} que execute de maneira nativa no
+orquestrador de contêineres Kubernetes.
+
+\subsection{Objetivos Específicos}
+
+\begin{itemize}
+    \item Desenvolver uma aplicação transparente para \textit{Checkpoint/Restore}
+    de aplicações \textit{Stateful} executando no orquestrador de contêineres Kubernetes.
+    \item Coletar métricas da performance da solução implementada para garantir
+    eficiência no \textit{Checkpoint/Restore}, comparando com execução sem a aplicação.
+    \item Identificar e avaliar classes de problemas ao qual a ferramenta não é possível
+    ser utilizada.
+\end{itemize}
+
+\section{Organização do Trabalho}
+
+O restante desse trabalho está organizado da seguinte maneira: o
+\autoref{cap:fundamentacao:teorica} apresenta alguns conceitos teóricos e técnicos
+de algumas ferramentas e paradigmas diretamente relacionados ao desenvolvimento
+dessa monografia, na sequência, o \autoref{cap:trabalhos:relacionados} apresenta 
+trabalhos relacionados com o nosso tema e o que foi desenvolvido, o
+\autoref{cap:servico} aborda a definição do nosso serviço, sua arquitetura e
+quais tecnologias serão utilizadas para prover o \textit{Checkpoint/Restore},
+no \autoref{cap:implementacao:servico} apresentamos a implementação do serviço, como
+ele foi feito, o que enfretamos de dificuldado na implementação, quais desafios foram
+resolvidos, quais desafios não foram resolvidos, abordamos de duas perspectivas
+diferentes, a da implementação com técnicas de \textit{Event Sourcing} e outra com a
+implementação com a utilização de CRIU, no \autoref{cap:analise:experimental} apresentamos
+as análises experimentais que realizamos sobre o serviço, coletando métricas e entendendo
+os resultados obtidos, por fim, no \autoref{cap:consideracoes:finais} são apresentadas
+as considerações finais reforçando os resultados obtidos, apresentando partes que não
+conseguimos alcançar do trabalho e cobrindo possíveis trabalhos futuros.
+
+\end{otherlanguage*}

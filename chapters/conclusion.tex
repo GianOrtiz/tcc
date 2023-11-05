@@ -1,0 +1,83 @@
+
+% The \phantomsection command is needed to create a link to a place in the document that is not a
+% figure, equation, table, section, subsection, chapter, etc.
+% https://tex.stackexchange.com/questions/44088/when-do-i-need-to-invoke-phantomsection
+\phantomsection
+
+% ---
+\chapter{\lang{Final Remarks}{Considerações Finais}}
+\phantomsection
+
+	O trabalho desenvolvido nesse Trabalho de Conclusão de Curso, embora, não 
+	tenha sido completamente finalizado, possibilitou uma análise sobre as técnicas
+	de \textit{Checkpoint/Restore} para aplicações \textit{Stateful} no Kubernetes.
+	Através da ferramenta CRIU, propusemos uma forma de implementar o
+	\textit{Checkpoint/Restore}, que embora não tenha sido possível ser implementada
+	no nosso Serviço, provou-se útil para realizar o salvamento do estado e posterior
+	recuperação de uma aplicação. Já na implementação com técnicas de
+	\textit{Event Sourcing} conseguimos realizar o Serviço de \textit{Checkpoint/Restore}
+	no Kubernetes com transparência, provendo uma cópia utilizável da aplicação na
+	tolerância a falhas a partir da reprojeção das requisições feitas a aplicação.
+	
+	O Serviço desenvolvido ainda possui algumas falhas, além de não conseguir
+	implementar	o salvamento e recuperação com CRIU. Este só funciona com aplicações
+	de estado que possuam uma réplica, mais réplicas geram estados incosistentes
+	entre as aplicações. Não é garantido que uma requisição que chega à aplicação,
+	chega na ordem que o nosso Interceptador a envia, é esperado que isto não
+	intervenha no estado da aplicação. Também não houve muito foco na segurança do
+	Serviço, já que temos acesso às chaves de comunicação com a API do Kubernetes
+	em nosso Interceptador, qualquer um que tenha acesso ao Interceptador, por
+	exemplo, através de uma exposição pela internet HTTP poderia obter acesso às
+	chaves da API do Kubernetes e obter e alterar o estado do Kubernetes, expondo
+	inclusive Secrets que devem funcionar como segredos no \textit{cluster}.
+	
+	Nos experimentos sobre o Serviço, percebemos que existe uma pequena queda de
+	performance na latência das requisições quando utilizamos o nosso Interceptador.
+	Entretanto, isto já era esperado, pois para garantirmos a tolerância a falhas, é
+	necessário que alguns passos sejam inseridos entre a requisição sair do usuário e
+	chegar à aplicação alvo, do que quando temos a aplicação \textit{standalone} que
+	apenas recebe a requisição e envia uma resposta. Também avaliamos que não é
+	eficiente utilizar a técnica de \textit{Event Sourcing} para aplicações que
+	recebem muitas requisições, como pressupomos ao iniciar o trabalho, isto cria uma
+	grande latência ao reprojetar todas as requisições já feitas à aplicação em uma
+	recuperação.
+	
+\section{Trabalhos futuros}
+
+Como trabalhos futuros podemos listar alguns pontos que faltaram fechar deste trabalho.
+O primeiro é a implementação com CRIU para o \textit{Checkpoint/Restore}, este trabalho
+mostrou que é possível utilizar a arquitetura proposta para realizar o
+\textit{Checkpoint/Restore}, mas não houve a finalização da implementação com CRIU,
+porém listamos as partes e problemas que faltam para ser efetivada a implementação. Com
+uma implementação com CRIU, podemos unir a implementação com técnicas de
+\textit{Event Sourcing} para criar um serviço adaptativo que permita trocar o tipo de
+restauração e definir o momento do início dos salvamentos de estado ativos através do
+CRIU com base na análise da performance das duas implementações.
+
+Neste trabalho em momento algum utilizamos técnica preditivas para detectar o momento
+que a aplicação poderia falhar, então, em determinados momentos poderiamos ter uma
+requisição interceptada pelo Interceptador e que não tenha sido enviada a aplicação
+falhante, em \cite{tran2022proactive} houve uma implementação de predição, poderíamos
+adicionar isto a nossa implementação para prover um Serviço mais ativo na recuperação,
+que não espere a falha acontecer para agir.
+
+Nosso trabalho não agiu com aplicações distribuídas geograficamente, isto mostra uma
+nova perspectiva, pois, será necessário espalhar os conteúdos tanto do Interceptador
+quanto de imagens geradas para outros nós geograficamente distribuídos o que gera
+latência de rede e tempo de restauração diferente dependendo da localização geográfica
+do nó que falha.
+
+O trabalho também não cobre aplicações que tenham mais de uma réplica com estado da
+mesma aplicação. Neste Serviço cobrimos apenas aplicações com uma réplica,
+aplicações com diversas réplicas necessitam de coordenaçao entre os interceptadores
+para acordar em uma ordem das requisições com algoritmos de consenso para resolver
+estes problemas, aliado ao problema de aplicações geograficamente distribuídas
+também temos o consenso entre estas os diferentes nós geograficamente distribuídos.
+
+Por fim, é possível aproveitar ainda mais de conceitos de \textit{Event Sourcing}.
+A aplicação alvo se instrumentada também com este padrão de projeto pode prover uma
+forma de obtermos o estado do sistema dela e salvarmos temporariamente no nosso
+Serviço. Esta cópia pode ser o estado de cada objeto armazenado no sistema, no caso
+de um banco de dados chave/valor, e a partir da finalização de uma requisição poderiamos
+salvar esta cópia no Administrador de Estados e excluir requisições anteriores a ela,
+reprojetando apenas as requisições a partir desta cópia.

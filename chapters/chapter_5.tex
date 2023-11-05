@@ -1,0 +1,157 @@
+
+% The \phantomsection command is needed to create a link to a place in the document that is not a
+% figure, equation, table, section, subsection, chapter, etc.
+% https://tex.stackexchange.com/questions/44088/when-do-i-need-to-invoke-phantomsection
+\phantomsection
+
+% Multiple-language document - babel - selectlanguage vs begin/end{otherlanguage}
+% https://tex.stackexchange.com/questions/36526/multiple-language-document-babel-selectlanguage-vs-begin-endotherlanguage
+\begin{otherlanguage*}{english}
+
+% The \phantomsection command is needed to create a link to a place in the document that is not a
+% figure, equation, table, section, subsection, chapter, etc.
+% https://tex.stackexchange.com/questions/44088/when-do-i-need-to-invoke-phantomsection
+\phantomsection
+
+% Multiple-language document - babel - selectlanguage vs begin/end{otherlanguage}
+% https://tex.stackexchange.com/questions/36526/multiple-language-document-babel-selectlanguage-vs-begin-endotherlanguage
+\begin{otherlanguage*}{brazil}
+
+\chapter{\lang{Exprimental Analysis}{Análise Experimental}} \label{cap:analise:experimental}
+
+Este capítulo apresenta a análise experimental sobre o Serviço criado. Para que seja possível
+validar o Serviço uma aplicação de testes foi criada em Go, que é um acrescentador de valores
+em memória, sempre que uma requisição chega a ele, este incrementa um no seu valor em memória.
+Esta é uma aplicação \textit{Stateful} e, portanto, é passível de ser utilizada no nosso Serviço.
+Este capítulo pretende responder a algumas perguntas a partir da análise dos experimentos:
+
+\begin{itemize}
+	\item Existe impacto ao se utilizar o Interceptador para interceptar requisições a
+	aplicação alvo? Este impacto deve ser considerado ao se utilizar o Serviço nas
+	aplicações.
+	\item Qual o impacto de tempo para a aplicação ser restaurada quando analizado com
+	o tempo do Kubernetes realizar a restauração de uma falha em um contêiner? Qual o
+	impacto da adição da recuperação com técnicas de \textit{Event Sourcing}?
+	\item Qual o impacto geral na vazão e latência da aplicação quando ela está sendo
+	interceptada pelo Interceptador? Qual a vazão e latência da aplicação quando ela
+	está sendo executada \textit{standalone}? Há um impacto pela adição do Interceptador?
+	\item Qual a vazão e latência durante a recuperação da aplicação pelas técnicas de
+	\textit{Event Sourcing}?
+\end{itemize}
+
+Para responder estas perguntas fizemos primeiro uma instrumentação no Serviço para que
+pudessemos coletar pontos importante para análise, como, por exemplo, momentos em que a
+aplicação alterou o estado do Interceptador, momento da introdução da falha do Interceptador,
+momento da detecção pelo Administrador de Estado e tempo até a aplicação retornar ao estado
+de Pronto. Análise de teste de carga para determinar a vazão e latência das requisições com
+diferentes cargas no sistema. A partir disto pretendemos responder as perguntas para esta
+análise. Também pontuasse que como a aplicação executa em um nó, as latências de rede não
+impactam tanto nos dados obtidos.
+
+Para realizar o teste de carga, utilizamos a aplicação bombardier \cite{bombardier}, ela
+permite realizar um número arbitrário de requisições concorrentes, definindo a quantidade
+de requisições e o tamanho da concorrência, isto nos permite testar a aplicação sobre uma
+carga mais real. Para coleta de outras métricas utilizamos horário de início e fim de cada
+uma das modificações, como o Serviço e a aplicação executam na mesma máquina o horário é
+igual para todos e não é necessário sincronização de relógios entre máquinas.
+
+\section{Análise aplicação standalone}
+
+Na aplicação \textit{standalone}, isto é, sem interferência do nosso Serviço, executando
+puramente no Kubernetes sem nosso Operador, temos o gráfico de vazãoXlatência da Figura
+\ref{fig:analysis-standalone}. Podemos ver que há uma dada vazão e uma dada latência,
+a partir de N requisições, podemos ver que a vazão começa a diminuir e a latência a aumentar
+este é o limite da nossa aplicação de forma unitária. Esta análise nos permite dar uma
+perspectiva sobre o quão bom nosso Serviço pode ser, este é o melhor caso da aplicação,
+ou seja, não há nenhum interferência de serviços externos, exceto o Kubernetes. 
+
+%TODO fig:analysis-standalone
+
+\section{Análise do Interceptador na aplicação}
+
+Nesta análise adicionamos já nosso Operador, que inclui um Interceptador entre a aplicação
+alvo e o cliente. Este Interceptador realiza as tarefas que já discutimos nos capítulos de 
+implementação, estas ações devem gerar algum impacto na aplicação, que iremos avaliar. Ao
+realizar um teste de carga, com os mesmo valores que utilizamos na aplicação
+\textit{standalone}, obtemos o grafico de vazãoXlatência da Figura
+\ref{fig:analysis-interceptor}. O gráfico nos mostra que também existe um limite entre 
+a vazão e a latência a partir do momento em que aumentamos o número de requisições feitas
+à aplicação.
+
+%TODO fig:analysis-interceptor
+
+Para melhor comparação também intercalamos os dois gráficos da Figura
+\ref{fig:analysis-standalone} e da Figura \ref{analysis-interceptor}, obtendo o gráfico
+da Figura \ref{fig:analysis-interceptor-standalone}. Neste gráfico podemos ver, que,
+embora, com um número pequeno de requisições não temos tanta alteração no momento de
+limite da aplicação, ao aumentar as requisições o impacto fica mais claro. Há um impacto
+ao se adicionar tratativas internas do Interceptador, como, por exemplo, a adição da
+requisição ao armazenamento da requisição com o identificador sequencial de cada requisição.
+
+%TODO fig:analysis-interceptor-standalone
+
+A clara interferência na performance da aplicação que o Interceptador gera já era esperada,
+aqui, cabe ao usuário do Serviço definir se o impacto na performance é vantajoso visto
+a transparência na tolerância a falha.
+
+\section{Análise do período de Checkpoint do Interceptador}
+
+Nesta Seção, pretendemos discutir e analisar qual o tempo gasto pelo \textit{Checkpoint} do
+Interceptador na implementação com CRIU. Na implementação com técnicas de
+\textit{Event Sourcing} não temos uma alteração, por exemplo, da latência das requisições ao
+se fazer um \textit{Checkpoint}, pois este ocorre passivamente. Já na implementação com CRIU
+a aplicação deve ser pausada por um momento para salvamento do seu estado e isto gera uma
+piora na qualidade de serviço para o usuário de maneira momentânea. Para simular este estado,
+iniciamos realizando um teste de carga na aplicação para criar um estado, a partir daí, iniciamos
+ao mesmo tempo um \textit{Checkpoint} a partir do Interceptador e um outro teste de carga, que deve
+durar mais tempo que o \textit{Checkpoint}.
+
+Podemos ver o gráfico de latência pelo tempo da execução deste teste na Figura
+\ref{fig:checkpoint-latency}. Neste gráfico, marcamos o momento de início do \textit{Checkpoint}
+e do final na linha do tempo, podemos ver, que durante o \textit{Checkpoint} até determinado
+momento temos um aumento na latência da aplicação, isto, como já era esperado é devido ao acúmulo
+de requisições que ficam presas no Interceptador e só posterior ao \textit{Checkpoint} podem ser
+tratadas pela aplicação alvo.
+
+%TODO checkpoint-latency
+
+Desta forma, podemos verificar que o Interceptador ao realizar um \textit{Checkpoint} degrada
+a qualidade de serviço provida ao usuário. Assim, quanto maior o intervalo entre um
+\textit{Checkpoint} e outro, menor será a degradação da qualidade de serviço como um todo.
+
+\section{Análise da recuperação com técnicas de Event Sourcing}
+
+Nesta Seção queremos investigar o impacto das técnicas de \textit{Event Sourcing} na
+recuperação do estado de uma aplicação que falhou. Para isso, primeiro utilizamos nosso teste
+de carga para levar a aplicação até um estado, com mil requisições(caso A), dez mil
+requisições(caso B), cem mil requisições(caso C) e um milhão de requisições(caso D). Depois
+repetimos o mesmo teste com cada uma delas, ao alcançar o estado a aplicação terá uma falha
+ocasionada pela interrupção da execução do container pela ferramenta crictl. Após a falha,
+a recuperação deve ocorrer, neste momento, passamos a realizar um teste de carga igual para
+todos os casos, mil requisições serão feitas de maneira concorrente entre cem clientes.
+
+%TODO fig:event-sourcing-latency
+
+O gráfico da vazãoXlatência nessa situação é dado na Figura \ref{fig:event-sourcing-latency},
+como podemos ver no último caso tivemos a pior situação, isto já era esperado, já que,
+o Interceptador teve que reexecutar um milhão de requisições antes que a aplicação pudesse
+se tornar ativa de novo e lidar com as mil requisições feitas pelo teste de carga. Esta análise
+mostra uma premissa que já tínhamos, de que existe um limite para utilização das técnicas
+de \textit{Event Sourcing} sobre o \textit{Checkpoint/Restore}, já que, conforme mais tempo
+a aplicação vive, mais se torna necessário utilizar outras técnicas para ser possível reduzir
+a replicação das requisições na recuperação, em \cite{muller2022architectute} a diminuição da
+pilha foi feita através da implementação da recuperação com CRIU.
+
+Agora, pretendemos também investigar o tempo que levamos entre a detecção, a recuperação e
+atingir o estado de pronto em cada caso, adicionamos métricas ao controlador de Pods, para 
+definir a detecção, e no nosso script identificamos o início da falha, a recuperação é definida
+nos momentos em que se altera o estado do Interceptador e o estado de Pronto também é
+instrumentado pelo controlador de Pods. Na Figura \ref{fig:latency-restoring} temos a visão
+em um gráfico de pilha, podemos ver que nos casos de p95, existe um grande impacto na recuperação,
+para cada caso já listado a recuperação continua aumentando e o impacto da detecção pelo
+controlador se torna cada vez mais irrelevante, mostrando, novamente o impacto de se utilziar
+a implementação com apenas técnicas de \textit{Event Sourcing}.
+
+%TODO fig:latency-restoring
+
+\end{otherlanguage*}
