@@ -15,7 +15,7 @@
 
 % Multiple-language document - babel - selectlanguage vs begin/end{otherlanguage}
 % https://tex.stackexchange.com/questions/36526/multiple-language-document-babel-selectlanguage-vs-begin-endotherlanguage
-\begin{otherlanguage*}{brazil}
+\begin{otherlanguage*}{portuguese}
 
 \chapter{\lang{Service Implementation}{Implementação do Serviço}} \label{cap:implementacao:servico}
 
@@ -222,7 +222,17 @@ a necessidade dos outros componentes. O Interceptador possui um estado interno q
 estar em dois valores diferentes, ou em Ativo ou em Aguardo. No Ativo enviamos todas
 as requisições interceptadas a aplicação alvo do Serviço, já no estado Aguardo nós
 realizamos o armazenamento das requisições e esperamos o estado retornar a Ativo para
-continuar a entrega das requisições. Este fluxo é mostrado no diagrama X. %TODO
+continuar a entrega das requisições. Enquanto seguimos o fluxo do diagrama da Figura
+\ref{fig:interceptor-request-interception} para interceptação das requisições durante
+o estado de Pronto do Interceptador, a Figura \ref{fig:diagram-wait-state-interceptor}
+representa o fluxo de interceptação quando o estado do Interceptador é Aguardo.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.46]{images/wait-state.png}
+\caption{Diagrama de sequência para tratamento de requisições durante estado de Aguardo do Interceptador.}
+\label{fig:diagram-wait-state-interceptor}
+\end{figure}
 
 Para realizar um \textit{Checkpoint}, expomos uma rota HTTP de \textbf{/checkpoint}, que
 chama a API do Kubernetes para que o kubelet comunique com o cri-o para realizar um 
@@ -233,7 +243,7 @@ disponível na API do Kubernetes, com o certificado e key de assinatura para com
 com o kube-apiserver, estes arquivos ficam localizados no cluster em
 /etc/kubernetes/pki/apiserver-kubelet-client.key e em
 /etc/kubernetes/pki/apiserver-kubelet-client.crt, adicionamos estes dois arquivos em um
-Secret como no Listing \ref{listing:kubelet-secret}. A partir daí basta chamarmos a API
+Secret como no Código \ref{listing:kubelet-secret}. A partir daí basta chamarmos a API
 do Kubernetes na rota <https://ip-do-cluster/checkpoint/namespace/pod/container>
 utilizando o método HTTP POST, onde ip-do-cluster é o IP do \textit{cluster} Kubernetes,
 é o \textit{namespace} do Kubernetes em que se encontra a aplicação do Kubernetes, pod é
@@ -244,7 +254,9 @@ checkpoint-pod\_namespace-container-timestamp.tar, em que os valores são os mes
 exceto, \textit{timestamp}, que representa a string do momento em que o \textit{Checkpoint}
 foi feito.
 
-%TODO listing:kubelet-secret
+\begin{lstlisting}[language=bash,caption={Criação do Secret para comunicação com o kubelet para compartilhamento com nosso Interceptador.},label={listing:kubelet-secret}]
+kubectl create secret generic kubelet-client-certs --from-file=client.crt=/etc/kubernetes/pki/apiserver-kubelet-client.crt --from-file=client.key=/etc/kubernetes/pki/apiserver-kubelet-client.key
+\end{lstlisting}
 
 Outra rota do Interceptador é a do estado em \textbf{/state}, através de uma chamada
 HTTP ao método POST podemos alterar o estado com o parâmetro na \textit{query} state,
@@ -285,7 +297,12 @@ define se a aplicação é monitorada pelo Serviço ou não e o valor do interva
 \textit{Checkpoint} ativo. O diagram da Figura \ref{fig:deployment-controller-diagram}
 define o funcionamento do controlador.
 
-%TODO fig:deployment-controller-diagram
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.46]{images/deployment-controller.png}
+\caption{Diagrama de fluxo para a injeção das configurações do Interceptador na aplicação alvo através de um Controlador de Deployments para o Operador.}
+\label{fig:deployment-controller-diagram}
+\end{figure}
 
 A partir da alteração do estado do \textit{cluster} pela criação de um novo Deployment
 monitorado o controlador realiza a criação de um novo recurso de Checkpoint. Este novo
@@ -304,13 +321,28 @@ novo Deployment que permite que seja acessado o Interceptador através de todo o
 o Kubernetes lida com a parte do DNS e das configurações de rede.
 
 Ao final temos a adição no manifesto do Deployment do conteúdo do contêiner como visto no
-Listing \ref{listing:sidecar-container}. Este contêiner tem montado na imagem um volume
+Código \ref{listing:sidecar-container}. Este contêiner tem montado na imagem um volume
 que indica os arquivos de assinatura na comunicação com o kube-apiserver que criamos na
 Seção de configuração do \textit{cluster}. Isto permite que o nosso Interceptador possa
 se comunicar de forma segura e autenticada com o Kubernetes para solicitar um novo
 \textit{Checkpoint} ao kubelet.
 
-%TODO listing:sidecar-container
+\begin{lstlisting}[language=yaml,caption={Configuração do Interceptador para o Deployment da aplicação alvo como sidecar container.},label={listing:sidecar-container}]
+image: docker.io/gianaortiz/crsc-interceptor
+imagePullPolicy: Always
+name: interceptor
+ports:
+- containerPort: 8001
+  hostPort: 8001
+  protocol: TCP
+resources: {}
+terminationMessagePath: /dev/termination-log
+terminationMessagePolicy: File
+volumeMounts:
+- mountPath: /var/run/secrets/kubelet-certs
+  name: kubelet-certs
+  readOnly: true
+\end{lstlisting}
 
 \subsubsection{Controlador de Pod}
 
@@ -331,7 +363,12 @@ para Ativo e findamos a restauração. Desta forma, temos um contêiner da aplic
 estado mais recente possível para aplicação e a restauração foi de forma transaparente ao
 usuário.
 
-%TODO fig:restore-pod
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.46]{images/restore-pod-criu.png}
+\caption{Diagrama de fluxo para a recuperação da aplicação alvo através de um Controlador de Pods para o Operador com a implementação com CRIU.}
+\label{fig:restore-pod}
+\end{figure}
 
 \subsubsection{Controlador de Checkpoint}
 
@@ -351,11 +388,17 @@ sobre a imagem de salvamento criada. Entretanto, não foi possível criar uma ap
 que conseguisse utilizar as bibliotecas do buildah para criação da imagem, muitos
 problemas foram encontrados ao se utilizar overlayfs como comunicação de disco e não
 houve tempo para realizar no nosso Serviço a geração da imagem. Porém, conseguimos criar
-uma imagem com buildah através da sequência de comandos no Listing
+uma imagem com buildah através da sequência de comandos no Código
 \ref{listing:buildah-build}, que podem ser refeitos através da biblioteca e agregados ao
 Serviço.
 
-%TODO listing:buildah-build
+\begin{lstlisting}[language=bash,caption={Comandos do buildah para construir a imagem de recuperação a partir de um Checkpoint feito pelo CRIU através do kubelet.},label={listing:buildah-build}]
+newcontainer=$(buildah from scratch)
+buildah add $newcontainer /var/lib/kubelet/checkpoints/checkpoint-<pod-name>_<namespace-name>-<container-name>-<timestamp>.tar /
+buildah config --annotation=io.kubernetes.cri-o.annotations.checkpoint.name=<container-name> $newcontainer
+buildah commit $newcontainer checkpoint-image:latest
+buildah rm $newcontainer
+\end{lstlisting}
 
 Desta forma, proveriamos um serviço transparente para monitorar as aplicações do tipo
 \textit{stateful} no Kubernetes, realizando \textit{Checkpoints} periódicos que depois
@@ -403,7 +446,12 @@ aplicação, isto irá colocar a aplicação no estado anterior a sua falha, ap�
 configuramos o estado do Interceptador para Ativo, isto fará o Interceptador continuar
 a enviar as requisições do cache e novas para a aplicação alvo.
 
-%TODO fig:pod-controller-event-sourcing
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.46]{images/restore-pod.png}
+\caption{Diagrama de fluxo para a recuperação da aplicação alvo através de um Controlador de Pods para o Operador na implementação com técnicas de \textit{Event Sourcing}.}
+\label{fig:pod-controller-event-sourcing}
+\end{figure}
 
 Desta forma, teriamos uma implementação que supostamente perderia performance dado
 o número das requisições. Quanto mais requisições o sistema recebe, mais demorado 
