@@ -189,9 +189,9 @@
   }
 
   % Backref package settings, pages with citations in bibliography
-  \newcommand{\biblatexcitedntimes}{\autocap{c}ited \arabic{citecounter} times}
-  \newcommand{\biblatexcitedonetime}{\autocap{c}ited one time}
-  \newcommand{\biblatexcitednotimes}{\autocap{n}o citation in the text}
+  \newcommand{\biblatexcitedntimes}{\autocap{c}itado \arabic{citecounter} vezes}
+  \newcommand{\biblatexcitedonetime}{\autocap{c}itado uma vez}
+  \newcommand{\biblatexcitednotimes}{\autocap{n}enhuma citação no texto}
 
   \@ifpackageloaded{babel}{\@ifpackagewith{babel}{brazil}{\addto\captionsbrazil{%
     \renewcommand{\biblatexcitedntimes}{\autocap{c}itado \arabic{citecounter} vezes}
@@ -236,8 +236,8 @@
 
         \DefineBibliographyStrings{english}
         {
-          backrefpage  = {on page},
-          backrefpages = {on pages},
+          backrefpage  = {na página},
+          backrefpages = {nas páginas},
         }
       \else
         \message{Is backtracker defined? NO!^^J}
