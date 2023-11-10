@@ -40,55 +40,59 @@ tenha funcionado bem com estas máquinas inicialmente, houveram dificuldades par
 fazer funcionar o CRIU juntamente com o Kubernetes nas máquinas. Então, optamos por
 trocar para outra solução mais comercial, o Google Cloud, nesta plataforma obtemos
 uma máquina virtual permanente, desta forma, não era necessário refazer a configuração
-da máquina todas as vezes. De modo, a economizar nos recursos nossos testes de
-implantação foram feitos em \textit{cluster} Kubernetes de máquinas com 2vCPU e 4GB
+da máquina todas as vezes. De modo, a economizar nos custos dos recursos de nossos testes,
+eles foram feitos sob uma implantação em \textit{cluster} Kubernetes de máquinas com 2vCPU e 4GB
 de memória, que é suficiente para executar um \textit{cluster} de nó único com Kubernetes.
 
-Para possibilitar a existência da aplicação no Kubernetes nós precisamos encaixar a
-aplicação no fluxo de reconciliação de estado do Kubernetes através do conceito do Operator.
-Para isto, criamos três Operators que juntos implementam partes dos componentes da
-nossa arquitetura. O Interceptador é o único que não será implementado a partir do Operator.
-Teremos o controlador de Deployment, que é responsável por verificar novos Deployments
-com anotação de monitoramento \textit{crsc.io/checkpoint-restore: true}, que indica que deve
-ser monitorado para recuperação pelo Serviço, este controlador irá adicionar no Deployment
-o Interceptador como um \textit{sidecar container}, que permitirá interceptar as requisições
-à aplicação alvo. O controlador de Pod, será o responsável por monitorar os Pods e
-verificar quando houver a anotação \textit{crsc.io/checkpoint-restore: true} e o contêiner
-alvo da aplicação sofrer um falha, ou seja, não estiver no estado de Pronto do Kubernetes,
-ele ser agendado para uma recuperação. Por fim, temos um outro controlador não totalmente
+Para possibilitar a existência da aplicação no Kubernetes nós precisamos adequar a
+aplicação no fluxo de reconciliação de estado do Kubernetes através do conceito do Operador
+\cite{kubernetes:operator}. Para isto, criamos três controladores, que são específicos para
+cada recurso do Kubernetes e realizam o fluxo de reconciliação para os recursos, que juntos
+implementam partes dos componentes da nossa arquitetura. O Interceptador é o único que não
+foi implementado a através de um controlador. Teremos o controlador de Deployment, que é
+responsável por verificar novos Deployments com anotação de monitoramento
+\textit{crsc.io/checkpoint-restore: true}, que indica que deve ser monitorado para
+recuperação pelo Serviço, este controlador adiciona no Deployment o Interceptador como
+um \textit{sidecar container}, que permitirá interceptar as requisições à aplicação alvo.
+O controlador de Pod, será o responsável por monitorar os Pods e verificar quando houver a
+anotação \textit{crsc.io/checkpoint-restore: true} e o contêiner alvo da aplicação sofrer
+uma falha, ou seja, não estiver no estado de Pronto do Kubernetes, ele ser agendado para
+uma recuperação. Por fim, temos um outro controlador não totalmente
 implementado, ele é o responsável por verificar o intervalo de \textit{Checkpoint} da
 aplicação através da anotação do Deployment \textit{crsc.io/checkpoint-interval}, sempre
-que um novo Deployment monitorado for verificado, um recurso de Checkpoint é criado, e este
+que um novo Deployment monitorado for identificado, um recurso de Checkpoint é criado, e este
 é monitorado pelo controlador do Checkpoint, quando se dá o momento do \textit{Checkpoint}
 o controlador se comunica com o Interceptador e depois cria uma nova imagem a partir do
 resultado do salvamento de estado do interceptador. Iremos cobrir com mais ênfase cada um
-deles nas seções posteriores. Para construir todos este Operador, utilizamos o framework
+deles nas seções posteriores. Para construir todos este Operador, utilizamos o \textit{framework}
 operator-sdk, que permite realizar a criação de recursos de Kubernetes e dos controladores
 de maneira ágil e simples, abstraindo as intereções com o kube-apiserver e criação dos
-Custom Resource Definition.
+Custom Resource Definition, que foram necessários para o novo recurso Checkpoint.
 
 Ainda no contexto do \textit{Checkpoint}, como comentamos no capítulo de trabalhos
 relacionados em \cite{schmidttransparent}, podemos obter um \textit{Checkpoint} da
 aplicação utilizando o kubelet e as funcionalidades já implementadas para o cri-o
-através da API do Kubernetes. Entretanto, isso não nos gera uma imagem no formato
-do Open Container Initiative, devemos criar essa imagem a partir de todos os
-passos que fizeram no trabalho em \cite{schmidttransparent}. O caminho que optamos
-por seguir é um pouco diferente e apresenta uma facilidade maior, na implementação
-de \cite{schmidttransparent} temos o problema de dar manutenção na geração da imagem
-sempre que uma mudança na interface ocorrer. Por isso, optamos por utilizar uma
-biblioteca e aplicação que já fizesse esta parte a abstraisse o trabalho para nós, a
-biblioteca que encontramos, que também funciona como uma aplicação de linha de comando,
-é o buildah\cite{buildah}.
+através da API do Kubernetes \cite{kubernetes:container-checkpoint}. Entretanto,
+isso não nos gera uma imagem no formato do Open Container Initiative, devemos criar
+essa imagem a partir de todos os passos que fizeram no trabalho em
+\cite{schmidttransparent}. O caminho que optamos por seguir é um pouco diferente e
+apresenta uma facilidade maior, na implementação de \cite{schmidttransparent} temos
+o problema de dar manutenção na geração da imagem sempre que uma mudança na interface
+ocorrer. Por isso, optamos por utilizar uma biblioteca e aplicação que já fizesse esta
+parte a abstraisse o trabalho para nós, a biblioteca que encontramos, que também
+funciona como uma aplicação de linha de comando, é o buildah\cite{buildah}. O buildah é
+uma ferramenta especializada para facilitar a criação de imagens de contêineres no formato
+do OCI.
 
 Para armazenamento persistente dos dados da aplicação, como as requisições, utilizamos
 o PostgreSQL \cite{postgresql} como banco de dados persistente. Ele será utilizado para
-armazenar as requisições persistentemente quando necessário, mas, não a aplicação pode
-se comportar com as requisições em memória ou em armazenamento persistente, cada forma
-possui seus prós e contras que abordaremos nas próximas seções.
+armazenar as requisições persistentemente quando necessário. Entretanto, a aplicação
+pode funcionar utilizando memória, mas, esta implementação de memória existe problemas
+dependendo da quantidade de memória livre para aplicação.
 
 \section{Configuração do Cluster}
 
-Para realizar a configuração do \textit{cluster} Kubernetes foi necessário realizar
+Para realizar a configuração do \textit{cluster} Kubernetes foram necessário realizar
 algumas configurações e instalação de pacotes que fizessem CRIU, Kubernetes e buildah
 funcionarem. Para configurar um \textit{cluster} Kubernetes com todas as funcionalidades
 necessárias utilizamos Ubuntu 20.04, em máquinas com processador Intel Broadwell de
@@ -108,35 +112,41 @@ o cri-o na versão 1.25, que é a versão necessária para fornecer suporte para
 
 Primeiro adicionamos os repositórios para instalação do cri-o, que será utilizado como
 \textit{runtime} de contêineres para o Kubernetes, e instalação dele, no mesmo comando
-de instalação, instalamos o pacote do CRIU. Neste momento devemos editar o arquivo de
-configuração do cri-o para habilitar o CRIU para \textit{Checkpoint} em /etc/crio/crio.conf
-sobre a seção [crio.runtime] os valores no Código \ref{listing:crio-conf}.
+de instalação, instalamos o pacote do CRIU. No Código \ref{listing:setup-script} também
+instalamos o \textit{backend} que o cri-o utiliza para contêineres, o runc, uma versão
+específica deve ser instalada para que funcione o cri-o no Kubernetes.
+
+Após instalado cri-o e CRIU, alteramos as configurações de ambos para que pudessemos
+realizar o \textit{Checkpoint}. Primeiro, no Código \ref{listing:crio-conf}, alteramos
+o comportamento da \textit{runtime} adicionando a opção que ativa o suporte para o CRIU
+no cri-o e uma opção que remove a infraestrutura quando um contêiner não possui uma id de
+processo privada, este deve ser ativado para mitigar um erro no cri-o. Estas alterações
+foram feitas no arquivo /etc/crio/crio.conf.
 
 \begin{lstlisting}[language=plaintext,caption={Configuração a ser incluída no arquivo de configurações do cri-o.},label={listing:crio-conf}]
 [crio.runtime]
-enable_criu_support = true
-drop_infra_ctr = false
+enable_criu_support = true # permite suporte a CRIU
+drop_infra_ctr = false # remove a infra quando um pod não tem uma id de processo privada
 \end{lstlisting}
 
-Para o runc, que é o \textit{backend} de \textit{runtime} de contêineres que o cri-o
-utilizada devemos editar para permitir que as funcionalidades do CRIU funcionem com as
-configurações do Código \ref{listing:runc-conf} em /etc/criu/runc.conf.
+Para que o CRIU possa utilizar o runc corretamente, também devemos editar a configuração
+do CRIU. No Código \ref{listing:runc-conf}, editamos o arquivo /etc/criu/runc.conf para 
+incluir configurações para fechar as conexões TCP, para ignorar conexões TCP já feitas,
+onde o cliente deverá refazer as requisições, e desativamos a adiministração e cgroups
+feita pela CRIU para utilizar o padrão.
 
 \begin{lstlisting}[language=plaintext,caption={Configuração a ser incluída no arquivo de configurações do runc para o CRIU.},label={listing:runc-conf}]
-tcp-close
-skip-in-flight
+tcp-close # fecha as conexões TCP
+skip-in-flight # ignora conexões já abertas que devem ser refeitas depois do checkpoint
 manage-cgroups=ignore
 \end{lstlisting}
 
-Agora, precisaremos iniciar o serviço do cri-o com o comando \textbf{sudo systemctl start crio}
-que irá habilitar o cri-o a funcionar na máquina.
-
 A próxima parte requer que tenhamos buildah instalado e o componentes principais do nó
 mestre do Kubernetes, o kubeadm e o kubelet, como também o kubectl para acessar o cluster
-através da interface da API do Kubernetes. Os comandos para instalação destes pacotes e
-componentes podem ser instalados através do Código \ref{listing:kubernetes-setup}. O comando
-\textbf{sudo apt-mark hold} é necessário para travar as versões de instalação dos componentes
-do Kubernetes nas suas versões em caso de atualização do sistema.
+através da  API do Kubernetes. Os comandos para instalação destes pacotes e componentes podem
+ser instalados através do Código \ref{listing:kubernetes-setup}. O comando \textbf{sudo apt-mark hold}
+é necessário para fixar as versões de instalação dos componentes do Kubernetes nas suas
+versões em caso de atualização do sistema.
 
 \begin{lstlisting}[language=bash,caption={Instalação dos pacotes necessários para Kubernetes e buildah.},label={listing:kubernetes-setup}]
 sudo apt-get install -y apt-transport-https ca-certificates curl buildah make
@@ -149,7 +159,7 @@ sudo apt-mark hold kubelet kubeadm kubectl
 \end{lstlisting}
 
 Como o \text{Checkpoint} para contêineres no Kubernetes ainda é uma funcionalidade em alfa para
-o Kubernetes ela não é ativada automaticamente para toda nova instância de \textit{cluster}
+o Kubernetes, ela não é ativada automaticamente para toda nova instância de \textit{cluster}
 Kubernetes. Precisamos alterar o funcionamento do Kubernetes para utilizar especificamente essa
 funcionalidade, para isso existem os chamados \textit{Feature Gates} do Kubernetes que permitem
 nas versões mais novas do Kubernetes ativar funcionalidades ainda não lançadas. Para ativar a
@@ -204,7 +214,7 @@ kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/custom-resources.yaml
 \end{lstlisting}
 
-A partir das configurações listadas nesta seção teremos um \textit{cluster} Kubernetes funcional
+A partir das configurações listadas nesta seção obtivemos um \textit{cluster} Kubernetes funcional
 pronto para iniciar nossas implementações, que permitem a utilização de CRIU para o \textit{Checkpoint}
 e de buildah para construção das imagens de recuperação.
 
@@ -216,13 +226,14 @@ a partir do CRIU e a do \textit{Checkpoint/Restore} a partir de técnicas de
 \textit{Event Sourcing} utilizam o mesmo Interceptador que é a funcionalidade comum aos
 dois. Para criá-lo utilizamos a linguagem de programação Go e
 realizamos uma construção de sua imagem utilizando Docker, não é necessário utilizar
-cri-o para constroir a imagem neste caso. A aplicação consiste de um servidor HTTP,
-este servidor possui algumas funcionalidades expostas que serão chamadas de acordo com
-a necessidade dos outros componentes. O Interceptador possui um estado interno que pode
-estar em dois valores diferentes, ou em Ativo ou em Aguardo. No Ativo enviamos todas
-as requisições interceptadas a aplicação alvo do Serviço, já no estado Aguardo nós
-realizamos o armazenamento das requisições e esperamos o estado retornar a Ativo para
-continuar a entrega das requisições. Enquanto seguimos o fluxo do diagrama da Figura
+cri-o para construir a imagem neste caso, pois as imagens geradas também seguem OCI.
+A aplicação consiste de um servidor HTTP, este servidor possui algumas funcionalidades
+expostas que serão chamadas de acordo com a necessidade dos outros componentes.
+O Interceptador possui um estado interno que pode estar em dois valores diferentes,
+ou em Ativo ou em Aguardo. No Ativo enviamos todas as requisições interceptadas a
+aplicação alvo do Serviço, já no estado Aguardo nós realizamos o armazenamento das
+requisições e esperamos o estado retornar a Ativo para continuar a entrega das
+requisições. Enquanto seguimos o fluxo do diagrama da Figura
 \ref{fig:interceptor-request-interception} para interceptação das requisições durante
 o estado de Pronto do Interceptador, a Figura \ref{fig:diagram-wait-state-interceptor}
 representa o fluxo de interceptação quando o estado do Interceptador é Aguardo.
@@ -238,12 +249,12 @@ Para realizar um \textit{Checkpoint}, expomos uma rota HTTP de \textbf{/checkpoi
 chama a API do Kubernetes para que o kubelet comunique com o cri-o para realizar um 
 \textit{Checkpoint} da aplicação executando no contêiner dentro do Pod alvo utilizando
 CRIU. De modo a realizar a comunicação com o kube-apiserver precisamos estar autenticados
-com o Kubernetes, deste modo, criamos um Secret no Kubernetes, uma configuração de segredo
+com o Kubernetes. Deste modo, criamos um Secret no Kubernetes, uma configuração de segredo
 disponível na API do Kubernetes, com o certificado e key de assinatura para comunicação
 com o kube-apiserver, estes arquivos ficam localizados no cluster em
 /etc/kubernetes/pki/apiserver-kubelet-client.key e em
 /etc/kubernetes/pki/apiserver-kubelet-client.crt, adicionamos estes dois arquivos em um
-Secret como no Código \ref{listing:kubelet-secret}. A partir daí basta chamarmos a API
+Secret como no Código \ref{listing:kubelet-secret}. Então, podemos chamarmos a API
 do Kubernetes na rota <https://ip-do-cluster/checkpoint/namespace/pod/container>
 utilizando o método HTTP POST, onde ip-do-cluster é o IP do \textit{cluster} Kubernetes,
 é o \textit{namespace} do Kubernetes em que se encontra a aplicação do Kubernetes, pod é
@@ -259,25 +270,25 @@ kubectl create secret generic kubelet-client-certs --from-file=client.crt=/etc/k
 \end{lstlisting}
 
 Outra rota do Interceptador é a do estado em \textbf{/state}, através de uma chamada
-HTTP ao método POST podemos alterar o estado com o parâmetro na \textit{query} state,
-sendo ou Active, ou Waiting, que coloca o Interceptador nos estados, respectivamente,
-de Ativou e Aguardo. Como já explicado anteriormente cada estado tem uma forma de agir
-quando interceptamos uma requisição à aplicação alvo.
+HTTP ao método POST podemos alterar o estado com o parâmetro na \textit{query}
+\textbf{state}, sendo ou Active, ou Waiting, que coloca o Interceptador nos estados,
+respectivamente, de Ativou e Aguardo. O estado inicial do Interceptador é o Ativo.
 
 Por fim, nós temos a rota \textbf{/reproject} que é a reprojeção de todas as requisições
 interceptadas pelo Interceptador e aceita pela aplicação alvo. Esta reprojeção permite
-que o estado seja alcançado. O idela nesta reprojeção seria que ela pudesse ser feita a
+que o estado seja alcançado. O ideal nesta reprojeção seria que ela pudesse ser feita a
 partir de uma versão das requisições. Entretanto, não a fizemos porque não foi possível
 finalizar a parte do \textit{Checkpoint/Restore} com CRIU que necessitaria desta parte.
 
 \section{Checkpoint/Restore com CRIU}
 
-Na implementação de \textit{Checkpoint/Restore} com CRIU o que devemos configurar são
-os três controladores, o controlador dos Deployments, o controlador dos Pods e o
-controlador do nosso recurso customizado Checkpoint. Nesta implementação temos três
-passos para toda aplicação monitorada, criação e implantação de um manifesto do
-Deployment da aplicação no Kubernetes. Posterior criação do recurso customizado
-Checkpoint e monitoramento das falhas do contêiner monitorado e posterior recuperação.
+Na implementação de \textit{Checkpoint/Restore} com CRIU criamos os três controladores do
+nosso Operador, o controlador dos Deployments, o controlador dos Pods e o controlador do
+nosso recurso customizado Checkpoint. Nesta implementação temos três passos para toda
+aplicação monitorada, criação e implantação de um manifesto do Deployment da aplicação
+no Kubernetes. Posterior criação do recurso customizado Checkpoint e monitoramento das
+falhas do contêiner monitorado e posterior recuperação. Estes passos serão feitos pelos 
+nossos controladores e descrevemos elas na próxima subseção.
 
 \subsection{Controladores}
 
@@ -317,8 +328,8 @@ anotação \textbf{crsc.io/checkpoint-restore} o manifesto do Deployment é alte
 para adicionar o contêiner do Interceptador como um \textit{sidecar container}, um novo
 ReplicaSet é, então, criado pelo Kubernetes que criará um novo Pod com o nosso
 Interceptador. Ao mesmo tempo o controlador cria um novo Service para o Interceptador no
-novo Deployment que permite que seja acessado o Interceptador através de todo o cluster,
-o Kubernetes lida com a parte do DNS e das configurações de rede.
+novo Deployment que permite o Interceptador seja acessado através de todo o cluster, o
+Kubernetes lida com a parte do DNS e das configurações de rede.
 
 Ao final temos a adição no manifesto do Deployment do conteúdo do contêiner como visto no
 Código \ref{listing:sidecar-container}. Este contêiner tem montado na imagem um volume
@@ -344,24 +355,32 @@ volumeMounts:
   readOnly: true
 \end{lstlisting}
 
+A partir desse momento nossa aplicação monitorada tem suas requisições interceptadas
+pelo nosso Interceptador. Inicialmente, o estado é Ativo no Interceptador, então todas
+as requisições serão primeiro armazenadas e depois encaminhadas à aplicação para que
+elas sejam tratadas.
+
 \subsubsection{Controlador de Pod}
 
 Para implementar o nosso Administrador de Estado, implementamos parte dele no controlador
 de Pod. O controlador tem uma adiministração mais passiva, através do ciclo de
 reconciliação, quando um Pod apresenta um problema, como por exemplo, um dos contêineres
-falhar, o controlador filtar os Pods que possuem a anotação
-\textbf{crsc.io/checkpoint-restore}, adicionando a uma fila, que, posteriormente será
-restaurada. A restauração aconteceria a partir da configuração de utilização de uma nova
+falhar, o controlador filtra os Pods que possuem a anotação
+\textbf{crsc.io/checkpoint-restore}, adicionando a uma fila de restauração.
+A restauração aconteceria a partir da configuração de utilização de uma nova
 imagem à aplicação monitorada, entretanto, não conseguimos criar a imagem de
-\textit{Checkpoint} e esta parte não foi feita. Na Figura \ref{fig:restore-pod} temos o
-diagrama de como funciona esta parte, obtemos o Pod falhante, encontramos o contêiner a
-ser restaurado, configuramos o estado do Interceptador para Aguardo, alteramos a imagem
-do contêiner monitorado para o \textit{Checkpoint} mais recente e, em seguida
-reprojetamos as requisições feitas a partir daquele \textit{Checkpoint} à aplicação. Ao
-findar e o contêinere estiver no seu estado de Pronto, alteramos o estado do Interceptador
-para Ativo e findamos a restauração. Desta forma, temos um contêiner da aplicação com o
-estado mais recente possível para aplicação e a restauração foi de forma transaparente ao
-usuário.
+\textit{Checkpoint} e esta parte não foi feita.
+
+Na Figura \ref{fig:restore-pod} temos o diagrama de como funciona esta parte. Primeiro o
+controlador recebe uma atualização de estado dos Pods, verificamos se o Pod é um Pod monitorado,
+caso seja e tenha um contêiner com falha, iremos adicioná-lo à fila de restauração. Caso a
+atualização de estado indique que ele está pronto iremos buscar o Pod na fila de restauração,
+então, editaremos a imagem da aplicação alvo para que seja a imagem do último \textit{Checkpoint}
+feito pelo controlador de Checkpoint. Após alterarmos a imagem, colocamos o Interceptador no
+estado Aguardo e pedimos para ele reprojetar as requisições a partir da última requisição
+recebida antes de se realizar o \textit{Checkpoint} atual. Ao final da reprojeção, alteramos
+o estado do Interceptador para Ativo e as requisições são encaminhadas para a aplicação alvo
+com o estado mais atual, fornecendo uma recuperação transparente ao usuário.
 
 \begin{figure}[h!]
 \centering
@@ -375,12 +394,12 @@ usuário.
 O controlador de Checkpoint realiza o ciclo de reconciliação para os recursos que nosso
 Operador criou do tipo Checkpoint. O recurso Checkpoint possui o intervalo que é
 passado através da anotação \textbf{crsc.io/checkpoint-interval} e o nome do Deployment
-que está sendo monitorado. Através disso nosso controlador cria um Ticker, que irá
-realizar o \textit{Checkpoint} a cada intervalo dado, para isso podemos realizar uma
-chamada HTTP à rota \textbf{/checkpoint} do Interceptador, que irá gerar o salvamento do
-estado da aplicação. Após isso, iriamos utilizar o buildah como biblioteca para gerar
-uma nova imagem no formato OCI, que seria salva no nosso kubelet para posteriormente ser
-utilizada em uma recuperação.
+que está sendo monitorado. Através dessa anotação nosso controlador cria um processo que
+será executado no intervalo dado para pedir um \textit{Checkpoint} ao Interceptador da
+aplicação ao chamar a rota \textbf{/checkpoint} no Service do Interceptador. O Interceptador
+irá pedir um novo \textit{Checkpoint} a API do kubelet e retornar sucesso. Após o sucesso,
+este controlador irá obter esse \textit{Checkpoint} e criará uma imagem de contêiner no
+formato OCI com buildah.
 
 Como o este controlador também implementa uma parte do nosso Administrador de Estado da 
 arquitetura geral, ele também seria o responsável por salvar informações de metadados
@@ -400,10 +419,11 @@ buildah commit $newcontainer checkpoint-image:latest
 buildah rm $newcontainer
 \end{lstlisting}
 
-Desta forma, proveriamos um serviço transparente para monitorar as aplicações do tipo
-\textit{stateful} no Kubernetes, realizando \textit{Checkpoints} periódicos que depois
-seriam utilizados para recuperar a aplicação a um determinado estado sempre que houvessem
-falhas, provendo tolerância a falhas, como visto em \cite{vayghan2021kubernetes}
+Embora o \textit{Checkpoint} impeça as requisições de chegarem à aplicação alvo
+diretamente, ele ocorre de forma transparente ao usuário da aplicação. Não é
+necessário entender que ele está acontecendo e não se percebe a existência dele. 
+Estes \textit{Checkpoints} periódicos seriam utilizados para recuperar a aplicação
+ao último estado de forma mais rápida e eficiente como em \cite{vayghan2021kubernetes}
 \cite{muller2022architecture} \cite{oh2018stateful} e \cite{schmidttransparent}.
 
 \section{Checkpoint/Restore com técnicas de Event Sourcing}
@@ -415,14 +435,16 @@ aplicações com muitas requisições fosse pior, pois, necessitariamos reenviar
 requisições desde o início do estado de Pronto da aplicação. Mas, a partir dela
 poderíamos unir com a técnica de \textit{Checkpoint} com CRIU para realizar ou uma ou
 outra dependendo do estado atual do sistema, eliminando o tempo gasto em um
-\textit{Checkpoint} no começo do estado de vida da aplicação.
+\textit{Checkpoint} no começo do estado de vida da aplicação. Assim, teremos algumas
+modificações para alguns controladores que mostramos na Seção passada, já que alguns
+passos não são realizados para nossa implementação com técnicas de \textit{Event Sourcing}.
 
 \subsection{Controladores}
 
 \subsubsection{Controlador de Deployment}
 
-O controlador de Deployment para a implementação com técnicas de Event Sourcing é a mesma
-que para a implementação com CRIU, exceto, que, não criamos o recurso de Checkpoint neste
+O controlador de Deployment para a implementação com técnicas de \textit{Event Sourcing} é
+a mesma que para a implementação com CRIU, exceto, que, não criamos o recurso de Checkpoint neste
 caso, pois, não há necessidade. Devido ao fato de sempre estarmos salvando as requisições
 interceptados pelo Interceptador, sempre temos a ordem de requisições que precisamos
 executar para obter o mesmo estado na aplicação alvo. Não precisamos realizar um
@@ -438,13 +460,15 @@ API.
 O controlador de Pod para a implementação com técnicas de Event Sourcing funciona
 diferente da implementação com CRIU. Pois, neste caso não precisamos alterar a imagem da
 aplicação alvo, ela permanece a mesma sempre, tudo que precisamos realizar é a sequência
-na Figura \ref{fig:pod-controller-event-sourcing}, identificar o contêiner falhante na 
-aplicação monitorado, agendar um restauração, na restauração, alterar o estado do
-Interceptador para Aguardo, realizando o cache das requisições que chegarem enquanto a
-restauração ocorre, realizar a reprojeção de todas as requisições que já chegaram à
-aplicação, isto irá colocar a aplicação no estado anterior a sua falha, após isto,
-configuramos o estado do Interceptador para Ativo, isto fará o Interceptador continuar
-a enviar as requisições do cache e novas para a aplicação alvo.
+na Figura \ref{fig:pod-controller-event-sourcing}. Primeiro identificamos um contêiner
+falhante a partir da atualização do kube-apiserver, adicionamos ele a uma fila de
+restauração caso ele seja monitorado através das anotações. Posteriormente a isso, quando
+o Pod atinge o estado de Pronto, recebemos mais uma atualização, caso o Pod esteja na
+fila de recuperação o Interceptador será colocado no estado Aguardo, será solicitada a
+reprojeção das requisições. Após o fim da reprojeção das requisições, que podem demorar,
+já que devemos fazer todas desde o ínicio do funcionamento da aplicação alvo, alteramos
+o estado do Interceptador para Pronto novamente. Novamente, de forma transparente
+recuperamos o contêiner da aplicação alvo para um estado consistente.
 
 \begin{figure}[h]
 \centering
@@ -454,11 +478,17 @@ a enviar as requisições do cache e novas para a aplicação alvo.
 \end{figure}
 
 Desta forma, teriamos uma implementação que supostamente perderia performance dado
-o número das requisições. Quanto mais requisições o sistema recebe, mais demorado 
-fica a reprojeção de todas as requisições, iremos validar este ponto na próxima Seção.
+o número das requisições. Quanto mais requisições o sistema recebe, mais demorado seria
+a reprojeção de todas as requisições, iremos validar este ponto na próxima Seção.
 Entretanto, vale notar que esta é uma implementação não tão abordada em outros trabalhos,
 exceto em \cite{muller2022architecture} que utiliza o conceito até certo ponto para
 replicar as requisições a partir do último ponto de salvamento anterior a recuperação
 da aplicação, o que diminui a latência em se recuperar a aplicação.
+
+Como inicialmente pretendiamos adicionar as duas implementações, uma com CRIU e outra
+com \textit{Event Sourcing}, pretendíamos aproveitar os pontos positivos de cada uma.
+Entretanto, apenas a versão da implementação com técnicas de \textit{Event Sourcing}
+foi finalizada e, pretendemos, na próxima Seção, investigar se essa implementação
+realmente sofre de todas as partes negativas que apontamos nesta Seção.
 
 \end{otherlanguage*}
