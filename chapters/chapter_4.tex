@@ -51,15 +51,15 @@ cada recurso do Kubernetes e realizam o fluxo de reconciliação para os recurso
 implementam partes dos componentes da nossa arquitetura. O Interceptador é o único que não
 foi implementado a através de um controlador. Teremos o controlador de Deployment, que é
 responsável por verificar novos Deployments com anotação de monitoramento
-\textit{crsc.io/checkpoint-restore: true}, que indica que deve ser monitorado para
+\texttt{crsc.io/checkpoint-restore: true}, que indica que deve ser monitorado para
 recuperação pelo Serviço, este controlador adiciona no Deployment o Interceptador como
 um \textit{sidecar container}, que permitirá interceptar as requisições à aplicação alvo.
 O controlador de Pod, será o responsável por monitorar os Pods e verificar quando houver a
-anotação \textit{crsc.io/checkpoint-restore: true} e o contêiner alvo da aplicação sofrer
+anotação \texttt{crsc.io/checkpoint-restore: true} e o contêiner alvo da aplicação sofrer
 uma falha, ou seja, não estiver no estado de Pronto do Kubernetes, ele ser agendado para
 uma recuperação. Por fim, temos um outro controlador não totalmente
 implementado, ele é o responsável por verificar o intervalo de \textit{Checkpoint} da
-aplicação através da anotação do Deployment \textit{crsc.io/checkpoint-interval}, sempre
+aplicação através da anotação do Deployment \texttt{crsc.io/checkpoint-interval}, sempre
 que um novo Deployment monitorado for identificado, um recurso de Checkpoint é criado, e este
 é monitorado pelo controlador do Checkpoint, quando se dá o momento do \textit{Checkpoint}
 o controlador se comunica com o Interceptador e depois cria uma nova imagem a partir do
@@ -144,7 +144,7 @@ manage-cgroups=ignore
 A próxima parte requer que tenhamos buildah instalado e o componentes principais do nó
 mestre do Kubernetes, o kubeadm e o kubelet, como também o kubectl para acessar o cluster
 através da  API do Kubernetes. Os comandos para instalação destes pacotes e componentes podem
-ser instalados através do Código \ref{listing:kubernetes-setup}. O comando \textbf{sudo apt-mark hold}
+ser instalados através do Código \ref{listing:kubernetes-setup}. O comando \texttt{sudo apt-mark hold}
 é necessário para fixar as versões de instalação dos componentes do Kubernetes nas suas
 versões em caso de atualização do sistema.
 
@@ -167,8 +167,8 @@ funcionalidade de \textit{Container Checkpoint} devemos alterar o arquivo de con
 determina a execução do kubelet no systemd do Ubuntu, em
 /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf, este arquivo deve estar como no
 Código \ref{listing:kubelet-conf}. A parte que ativa o \textit{Feature Gate} é
-\textbf{Environment="KUBELET\_FEATURE\_GATES\_ARGS=--feature-gates=ContainerCheckpoint=true"}. Já
-a parte \textbf{Environment="KUBELET\_EXTRA\_ARGS=--cgroup-driver=systemd"} configura o kubelet
+\texttt{Environment="KUBELET\_FEATURE\_GATES\_ARGS=--feature-gates=ContainerCheckpoint=true"}. Já
+a parte \texttt{Environment="KUBELET\_EXTRA\_ARGS=--cgroup-driver=systemd"} configura o kubelet
 para utilizar o cgroup systemd para executar, isto coloca o cri-o no mesmo cgroup do kubelet, 
 que permite que o último utilize o primeiro, caso isso não seja feito o kubelet não teria acesso
 ao cri-o.
@@ -240,12 +240,12 @@ representa o fluxo de interceptação quando o estado do Interceptador é Aguard
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.46]{images/wait-state.png}
+\includegraphics[scale=0.64]{images/wait-state.png}
 \caption{Diagrama de sequência para tratamento de requisições durante estado de Aguardo do Interceptador.}
 \label{fig:diagram-wait-state-interceptor}
 \end{figure}
 
-Para realizar um \textit{Checkpoint}, expomos uma rota HTTP de \textbf{/checkpoint}, que
+Para realizar um \textit{Checkpoint}, expomos uma rota HTTP de \texttt{/checkpoint}, que
 chama a API do Kubernetes para que o kubelet comunique com o cri-o para realizar um 
 \textit{Checkpoint} da aplicação executando no contêiner dentro do Pod alvo utilizando
 CRIU. De modo a realizar a comunicação com o kube-apiserver precisamos estar autenticados
@@ -269,12 +269,12 @@ foi feito.
 kubectl create secret generic kubelet-client-certs --from-file=client.crt=/etc/kubernetes/pki/apiserver-kubelet-client.crt --from-file=client.key=/etc/kubernetes/pki/apiserver-kubelet-client.key
 \end{lstlisting}
 
-Outra rota do Interceptador é a do estado em \textbf{/state}, através de uma chamada
+Outra rota do Interceptador é a do estado em \texttt{/state}, através de uma chamada
 HTTP ao método POST podemos alterar o estado com o parâmetro na \textit{query}
-\textbf{state}, sendo ou Active, ou Waiting, que coloca o Interceptador nos estados,
+\texttt{state}, sendo ou Active, ou Waiting, que coloca o Interceptador nos estados,
 respectivamente, de Ativou e Aguardo. O estado inicial do Interceptador é o Ativo.
 
-Por fim, nós temos a rota \textbf{/reproject} que é a reprojeção de todas as requisições
+Por fim, nós temos a rota \texttt{/reproject} que é a reprojeção de todas as requisições
 interceptadas pelo Interceptador e aceita pela aplicação alvo. Esta reprojeção permite
 que o estado seja alcançado. O ideal nesta reprojeção seria que ela pudesse ser feita a
 partir de uma versão das requisições. Entretanto, não a fizemos porque não foi possível
@@ -302,15 +302,15 @@ dos recursos.
 
 O controlador do Deployment tem como seu recurso monitorado os Deployments do
 \textit{cluster}. Sempre que uma aplicação é criada ela deve ser criada com anotações
-no manifesto do Deploment, como \textbf{crsc.io/checkpoint-restore} e
-\textbf{crsc.io/checkpoint-interval}, que são respectivamente, o valor booleano que
+no manifesto do Deploment, como \texttt{crsc.io/checkpoint-restore} e
+\texttt{crsc.io/checkpoint-interval}, que são respectivamente, o valor booleano que
 define se a aplicação é monitorada pelo Serviço ou não e o valor do intervalo de
 \textit{Checkpoint} ativo. O diagram da Figura \ref{fig:deployment-controller-diagram}
 define o funcionamento do controlador.
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.46]{images/deployment-controller.png}
+\includegraphics[scale=0.8]{images/deployment-controller.png}
 \caption{Diagrama de fluxo para a injeção das configurações do Interceptador na aplicação alvo através de um Controlador de Deployments para o Operador.}
 \label{fig:deployment-controller-diagram}
 \end{figure}
@@ -324,7 +324,7 @@ alcançar o estado definido pelo manifesto.
 
 Este controlador também deve injetar o Interceptador como um \textit{sidecar container}
 ao Deployment da aplicação alvo. Sempre que um Deployment novo é adicionado com a 
-anotação \textbf{crsc.io/checkpoint-restore} o manifesto do Deployment é alterado
+anotação \texttt{crsc.io/checkpoint-restore} o manifesto do Deployment é alterado
 para adicionar o contêiner do Interceptador como um \textit{sidecar container}, um novo
 ReplicaSet é, então, criado pelo Kubernetes que criará um novo Pod com o nosso
 Interceptador. Ao mesmo tempo o controlador cria um novo Service para o Interceptador no
@@ -366,7 +366,7 @@ Para implementar o nosso Administrador de Estado, implementamos parte dele no co
 de Pod. O controlador tem uma adiministração mais passiva, através do ciclo de
 reconciliação, quando um Pod apresenta um problema, como por exemplo, um dos contêineres
 falhar, o controlador filtra os Pods que possuem a anotação
-\textbf{crsc.io/checkpoint-restore}, adicionando a uma fila de restauração.
+\texttt{crsc.io/checkpoint-restore}, adicionando a uma fila de restauração.
 A restauração aconteceria a partir da configuração de utilização de uma nova
 imagem à aplicação monitorada, entretanto, não conseguimos criar a imagem de
 \textit{Checkpoint} e esta parte não foi feita.
@@ -384,7 +384,7 @@ com o estado mais atual, fornecendo uma recuperação transparente ao usuário.
 
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=0.46]{images/restore-pod-criu.png}
+\includegraphics[scale=0.64]{images/restore-pod-criu.png}
 \caption{Diagrama de fluxo para a recuperação da aplicação alvo através de um Controlador de Pods para o Operador com a implementação com CRIU.}
 \label{fig:restore-pod}
 \end{figure}
@@ -393,10 +393,10 @@ com o estado mais atual, fornecendo uma recuperação transparente ao usuário.
 
 O controlador de Checkpoint realiza o ciclo de reconciliação para os recursos que nosso
 Operador criou do tipo Checkpoint. O recurso Checkpoint possui o intervalo que é
-passado através da anotação \textbf{crsc.io/checkpoint-interval} e o nome do Deployment
+passado através da anotação \texttt{crsc.io/checkpoint-interval} e o nome do Deployment
 que está sendo monitorado. Através dessa anotação nosso controlador cria um processo que
 será executado no intervalo dado para pedir um \textit{Checkpoint} ao Interceptador da
-aplicação ao chamar a rota \textbf{/checkpoint} no Service do Interceptador. O Interceptador
+aplicação ao chamar a rota \texttt{/checkpoint} no Service do Interceptador. O Interceptador
 irá pedir um novo \textit{Checkpoint} a API do kubelet e retornar sucesso. Após o sucesso,
 este controlador irá obter esse \textit{Checkpoint} e criará uma imagem de contêiner no
 formato OCI com buildah.
@@ -472,7 +472,7 @@ recuperamos o contêiner da aplicação alvo para um estado consistente.
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.46]{images/restore-pod.png}
+\includegraphics[scale=0.64]{images/restore-pod.png}
 \caption{Diagrama de fluxo para a recuperação da aplicação alvo através de um Controlador de Pods para o Operador na implementação com técnicas de \textit{Event Sourcing}.}
 \label{fig:pod-controller-event-sourcing}
 \end{figure}

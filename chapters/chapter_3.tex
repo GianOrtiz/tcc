@@ -190,7 +190,7 @@ executando e pronto.
 
 Nosso Interceptador será implantado através de um \textit{sidecar container} na aplicação
 monitorada, teremos um Operador do Kubernetes que tentará conciliar o estado dos Deployments,
-sempre que houver um Deployment com uma anotação do tipo \textbf{crsc.io/checkpoint-restore}
+sempre que houver um Deployment com uma anotação do tipo \texttt{crsc.io/checkpoint-restore}
 com valor de \textit{true}, iremos criar um novo contêiner no deployment que servirá como 
 Interceptador e irá interceptar o tráfego ao Pod. Assim, como em \cite{muller2022architecture},
 nosso Interceptador implementado como um \textit{sidecar} permite economia de tráfego, já que
@@ -208,7 +208,7 @@ usuário que a solicitou.
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.46]{images/interceptor-intercept.png}
+\includegraphics[scale=0.64]{images/interceptor-intercept.png}
 \caption{Diagrama de sequência da interceptação de requisição pelo Interceptor.}
 \label{fig:interceptor-request-interception}
 \end{figure}
@@ -239,7 +239,7 @@ momentaneamente.
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.46]{images/interceptor-checkpoint.png}
+\includegraphics[scale=0.64]{images/interceptor-checkpoint.png}
 \caption{Diagrama de sequência do salvamento de imagem feito pelo Interceptor.}
 \label{fig:interceptor-checkpoint}
 \end{figure}
