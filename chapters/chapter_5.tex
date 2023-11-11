@@ -55,63 +55,75 @@ carga mais real. Para coleta de outras métricas utilizamos horário de início 
 uma das modificações, como o Serviço e a aplicação executam na mesma máquina o horário é
 igual para todos e não é necessário sincronização de relógios entre máquinas.
 
-\section{Análise aplicação standalone}
+\section{Análise da inteterferência do Interceptador na aplicação}
 
-Na aplicação \textit{standalone}, isto é, sem interferência do nosso Serviço, executando
-puramente no Kubernetes sem nosso Operador, temos o gráfico de vazão, N clientes realizando
-requisições paralelamente durante 10 segundos, por latência, em millisegundos da Figura
-\ref{fig:analysis-standalone}. Verificamos que a partir de mil e quinhentos clientes nossa
-aplicação atinge seu limite, a partir do qual, qualquer acréscimo de requisições 
-simultâneas, degrada a performance de latência e a qualidade de seriviço. O gráfico aponta
-o p95 da latência das aplicações. Esta análise nos permite dar uma perspectiva sobre o
-quão bom nosso Serviço pode ser, este é o melhor caso da aplicação, ou seja, não há nenhum
-interferência de serviços externos, exceto o Kubernetes. Os pontos em destaque no gráfico
-da Figura \ref{fig:analysis-standalone} são nossos pontos de controle para os testes.
+Para fins de entender o quanto o Interceptador interfere no serviço que ele monitora,
+instrumentamos a aplicação e utilizamos um teste de carga para verificar a performance
+em três casos, da aplicação \textit{standalone}, isto é, sem a interferência do Interceptador,
+da aplicação com o Interceptador utilizando memória para armazenamento das requisições e 
+da aplicação com o Interceptador utilizando um banco de dados SQL para armazenamento das
+requisições. Realizamos os mesmos testes de carga utilizando o bombardier para realizar
+requisições com N clientes paralelamente durante dez segundos. A partir da finalização
+das requisições obtivemos o valor médio da latência das requisições e pudemos construir 
+um gŕafico de vazão por latência para os três casos, que é mostrado na Figura
+\ref{fig:analysis-interceptor-standalone}.
 
-\begin{figure}[h]
-\centering
-\includegraphics[scale=0.46]{images/standalone_graph.png}
-\caption{Gráfico de vazão X latência da aplicação alvo executando de forma \textit{standalone}.}
-\label{fig:analysis-standalone}
-\end{figure}
+O gŕafico da Figura \ref{fig:analysis-interceptor-standalone} nos provê informações que já
+esperávamos, mas serão confirmadas por ele. Na aplicação \textit{standalone}, linha em vermelho,
+podemos ver que demora muito para a aplicação atingir seu máximo de sobrecarga, somente entre
+seis mil e dez mil clientes acabamos tendo uma performance que só piora a partir do aumento
+da utilização do serviço. Inicialmente o serviço tem uma latência muito pequena, por exemplo,
+com cinquenta clientes, temos apenas 5.11ms de latência.
 
-\section{Análise do Interceptador na aplicação}
+A partir do momento que introduzimos o Interceptador temos uma piora, tanto da latência inicial,
+quanto uma piora na questão da máxima vazão da aplicação. No caso da aplicação utilizando uma
+implementação de armazenamento em memória, linha verde na Figura \ref{fig:analysis-interceptor-standalone},
+temos que o máximo de carga do serviço se dá entre dois mil a dois mil e setecentos clientes
+simultâneos. Há uma piora direta logo nos primeiros cinquenta clientes, onde a latência
+média tem seu valor 38.55ms. Isto mostra que o impacto do nosso Interceptador e pelas
+operações que ele faz, como, por exemplo, processamento da requisição obtendo apenas as
+partes necessárias para o armazenamento, acréscimo da versão de ordem da requisição,
+envio da requisição para a aplicação e posterior retorno da resposta para o cliente, geram
+uma sobrecarga que influencia na performance do sistema como um todo. É importante notar que
+a implementação em memória que utilizamos não tem possibilidade de realizar o \textit{Checkpoint},
+já que não há memória infinita e não poderíamos armazenar todas as requisições em memória
+que seriam necessárias para a reprojeção. Uma possibilidade de melhoria dessa abordagem,
+que não foi feita, seria armazenar parte em memória e parte em um armazenamento fixo, como
+um banco de dados ou em um arquivo.
 
-A partir do momento que integramos a aplicação alvo no nosso Operador esperamos ter um
-acréscimo do tempo de latência da aplicação e também um limite menor a partir do momento
-em que a aplicação atinge o pico de vazão. Realizando os mesmos testes com pontos de controle
-a cada duzento e cinquenta clientes com requisições simultâneas temos o gráfico da Figura
-\ref{fig:analysis-interceptor}, verificamos que a aplicação perde performance, no ponto de
-controle de quinhentos clientes já atingimos o mesmo pico da aplicação \textit{standalone}
-mostrado na \ref{fig:analysis-standalone}.
-
-\begin{figure}[h]
-\centering
-\includegraphics[scale=0.46]{images/interceptor_graph.png}
-\caption{Gráfico de vazão X latência da aplicação alvo com o Interceptador.}
-\label{fig:analysis-interceptor}
-\end{figure}
-
-No gráfico da Figura \ref{fig:analysis-interceptor-standalone} temos a sobreposições 
-dos gráficos de latência da aplicação alvo sem o Operador e com o Operador. O gráfico
-deixa mais claro a perda de performance, já que logo no primeiro ponto de control de
-duzentos e cinquenta clientes temos uma latência de 44.42ms para a aplicação
-\textit{standalone} e de 1470ms para a aplicação com o Operador. A diferença dos valores
-se deve a todas as operações que realizamos no Interceptador, como adição ao banco de
-dados da requisição interceptada e encaminhamento da requisição para a aplicação alvo.
-A perda já é evitada por ambos os contêineres estarem executando no mesmo Pod e reduzindo
-as camadas necessárias para transferência dos dados via TCP.
+Já na implementação do Interceptador com armazenamento em um banco de dados SQL, linha azul
+na Figura \ref{fig:analysis-interceptor-standalone}, temos a pior performance de todas. Isto
+se deve principalmente por dois fatores, da sobrecarga do sistema que realizamos os experimentos,
+já que este estava executando o Kubernetes, um banco de dados, nosso Serviço e a aplicação
+em uma máquina de 2vCPU e 4GB de memória, e também pela latência na inserção das entradas
+de requisições no banco de dados. Como podemos ver na \ref{fig:analysis-interceptor-standalone},
+a capacidade máxima do sistema é atingida muito rapidamente, entre trezentos e quinhentos
+clientes simultâneos. A aplicação também apresenta a pior performance em latência já no
+começo dos expirmentos com cinquenta clientes simultâneos, com uma latência de 151.94ms,
+quase 400\% a mais que na implementação com o Interceptador com armazenamento em memória e
+quase 3000\% a mais que na aplicação \textit{standalone}. Para utilizar essa solução em
+um ambiente de produção seria necessário deixar a aplicação mais performática, através da
+possibilidade de utilização de bancos mais rápidos, como de chave/valor ou de documentos.
 
 \begin{figure}[h]
 \centering
 \includegraphics[scale=0.46]{images/vazaoxlatencia.png}
-\caption{Gráfico de sobreposição de vazão X latência da aplicação alvo de forma \textit{standalone} e da aplicação alvo com o Interceptador.}
+\caption{Gráfico de sobreposição de vazão X latência da aplicação alvo de forma \textit{standalone}, da aplicação alvo com o Interceptador com armazenamento em memória e da aplicação alvo com o Interceptador com armazenamento em banco de dados SQL.}
 \label{fig:analysis-interceptor-standalone}
 \end{figure}
 
-Poderíamos melhorar a performance do Interceptador com banco de dados mais personalizado para
-nossa aplicação com adição de índices ou utilização de cache. Entretanto, estes fatores não
-foram cobridos no nosso trabalho.
+Para nível de comparação no impacto do banco de dados na aplicação, instrumentamos o
+código do Interceptador para capturar métricas sobre a latência em escrever a requisição
+no banco de dados. Nas requisições com trezentos clientes simultâneos que obtemos uma
+latência média de 1590ms, tivemos uma latência média para inserção da requisição no banco
+de 1117ms, um impacto de cerca de 70.25\% na latência da aplicação. Uma estratégia combinar
+a estratégia de implementação do armazenamento em memória com o armazenamento em banco de
+dados SQL. Teríamos uma lista com tamanho fixo de dados, que armazenaria as requisições em
+memória, a partir do momento em que ela excedesse sem máximo, iriamos escrever os dados no
+banco de dados uma única vez, e continuariamos sobreescrevendo a lista, ao fazer isso,
+iríamos diminuir a latência de escrita, já que seria feita menos vezes e aumentar a
+eficiência pelo armazenamento em memória. Entretanto, esta sugestão não foi feita neste
+trabalho.
 
 \section{Análise do período de Checkpoint do Interceptador}
 
@@ -195,11 +207,19 @@ requisições acumuladas no Interceptador para realizar a recuperação.
 \begin{tabular}{|c|c|c|}
 \hline
 \textbf{\begin{tabular}[c]{@{}c@{}}Ńúmero de requisições\\ acumuladas\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Tempo de Identificação \\ (microssegundos) \end{tabular}} &
-\textbf{\begin{tabular}[c]{@{}c@{}}Tempo de Recuperação \\ (microssegundos) \end{tabular}} \\ \hline
-1000(A) &  991011 & 990702 \\ \hline
-10000(B) & 998153 & 975395     \\ \hline
-20000(C) & 1013021 & 85667000000 \\ \hline
+\textbf{\begin{tabular}[c]{@{}c@{}}Tempo de Recuperação \\ (segundos) \end{tabular}} \\ \hline
+1000(A) &  991011 & 0.990702s \\ \hline
+10000(B) & 998153 & 0.975395s     \\ \hline
+20000(C) & 1013021 & 856.670.000s \\ \hline
 \end{tabular}
 \end{table}
+
+Na tabela \ref{tab:latency-restoring} percebemos que nosso limite da restauração quanto ao
+número de requisições armazenadas está entre dez mil requisições e vinte mil requisições.
+O aumento de cerca de 1s no tempo de restauração para cerca de 14min mostra uma perda de
+performance muito grande. Seria essencial integrar outros \textit{Checkpoints} durante a
+interceptação das requisições com o método de técnicas de \textit{Event Sourcing} para que
+fosse possível diminuir o tempo de latência na recuperação a partir da dimunição da
+quantidade de requisições armazenadas antes do último \textit{Checkpoint}.
 
 \end{otherlanguage*}
