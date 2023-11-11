@@ -22,29 +22,36 @@
 	O Serviço desenvolvido ainda possui algumas falhas, além de não conseguir
 	implementar	o salvamento e recuperação com CRIU. Este só funciona com aplicações
 	de estado que possuam uma réplica, mais réplicas geram estados incosistentes
-	entre as aplicações. Não é garantido que uma requisição que chega à aplicação,
-	chega na ordem que o nosso Interceptador a envia, é esperado que isto não
-	intervenha no estado da aplicação. Também não houve muito foco na segurança do
+	entre as aplicações. Também não houve muito foco na segurança do
 	Serviço, já que temos acesso às chaves de comunicação com a API do Kubernetes
 	em nosso Interceptador, qualquer um que tenha acesso ao Interceptador, por
 	exemplo, através de uma exposição pela internet HTTP poderia obter acesso às
 	chaves da API do Kubernetes e obter e alterar o estado do Kubernetes, expondo
 	inclusive Secrets que devem funcionar como segredos no \textit{cluster}.
-	
-	Nos experimentos sobre o Serviço, percebemos que existe uma pequena queda de
-	performance na latência das requisições quando utilizamos o nosso Interceptador.
-	Entretanto, isto já era esperado, pois para garantirmos a tolerância a falhas, é
-	necessário que alguns passos sejam inseridos entre a requisição sair do usuário e
-	chegar à aplicação alvo, do que quando temos a aplicação \textit{standalone} que
-	apenas recebe a requisição e envia uma resposta. Também avaliamos que não é
-	eficiente utilizar a técnica de \textit{Event Sourcing} para aplicações que
-	recebem muitas requisições, como pressupomos ao iniciar o trabalho, isto cria uma
-	grande latência ao reprojetar todas as requisições já feitas à aplicação em uma
-	recuperação.
-	
+
+	A performance do nosso Serviço fica em evidência no Capítulo \ref{cap:analise:experimental},
+	onde verificamos que a implementação necessita de melhorias na performance para
+	que seja possível ser utilizada em aplicações em ambientes de produção. Como
+	mostramos no capítulo existe uma evidência de que o armazenamento persistente
+	através de um banco de dados SQL gera muita sobrecarga no sistema, precisamos
+	trabalhar em cima deste ponto, com modificações unindo implementação com
+	armazenamento em memória e \textit{Checkpoint} com CRIU. Esta perda de
+	performance já era esperada no início do trabalho.
+
+	Por fim, o trabalho cumpriu com o seu objetivo, que era implementar um Serviço
+	de \textit{Checkpoint/Restore} para aplicações \textit{Stateful} no Kubernetes.
+	Conseguimos acoplar uma aplicação ao nosso Serviço a partir da utilização de
+	anotações no Deployment, permitindo que o usuário do Serviço não tenha que
+	realizar configurações na sua aplicação, realizar \textit{Checkpoints} passivos
+	com técnicas de \textit{Event Sourcing} e restaurar a aplicação no caso de uma
+	falha de forma transparente, onde a aplicação é restaurada para seu último estado
+	de funcionamento. Também conseguimos entregar uma parte clara de como integrar o
+	\textit{Checkpoint} com CRIU no nosso Serviço através da utilização do buildah
+	para construção das imagens de recuperação.
+
 \section{Trabalhos futuros}
 
-Como trabalhos futuros podemos listar alguns pontos que faltaram fechar deste trabalho.
+Como trabalhos futuros podemos listar alguns pontos que faltaram fechar netes trabalho.
 O primeiro é a implementação com CRIU para o \textit{Checkpoint/Restore}, este trabalho
 mostrou que é possível utilizar a arquitetura proposta para realizar o
 \textit{Checkpoint/Restore}, mas não houve a finalização da implementação com CRIU,
@@ -52,7 +59,8 @@ porém listamos as partes e problemas que faltam para ser efetivada a implementa
 uma implementação com CRIU, podemos unir a implementação com técnicas de
 \textit{Event Sourcing} para criar um serviço adaptativo que permita trocar o tipo de
 restauração e definir o momento do início dos salvamentos de estado ativos através do
-CRIU com base na análise da performance das duas implementações.
+CRIU com base na análise da performance das duas implementações. Seguindo os trabalhos
+de \cite{muller2022architecture}, onde nossa arquitetura foi inspirada. 
 
 Neste trabalho em momento algum utilizamos técnica preditivas para detectar o momento
 que a aplicação poderia falhar, então, em determinados momentos poderiamos ter uma
@@ -65,7 +73,9 @@ Nosso trabalho não agiu com aplicações distribuídas geograficamente, isto mo
 nova perspectiva, pois, será necessário espalhar os conteúdos tanto do Interceptador
 quanto de imagens geradas para outros nós geograficamente distribuídos o que gera
 latência de rede e tempo de restauração diferente dependendo da localização geográfica
-do nó que falha.
+do nó que falha. No trabalho de \cite{vayghan2021kubernetes}, tivemos uma análise da
+distribuição geográfica e como poderíamos fazer para diminuir a latência através da
+distribuição dos dados armazenados persistentemente.
 
 O trabalho também não cobre aplicações que tenham mais de uma réplica com estado da
 mesma aplicação. Neste Serviço cobrimos apenas aplicações com uma réplica,
