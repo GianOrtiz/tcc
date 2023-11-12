@@ -36,7 +36,7 @@ de forma eficiente.
 \subsection{Checkpoint/Restore}
 
 O \textit{Checkpoint/Restore} de aplicações \textit{stateful} em contêineres podem ser
-feitas entre duas formas, como abordamos no \ref{cap:fundamentacao:teorica}, ou
+feitas entre duas formas, como abordamos no Capítulo \ref{cap:fundamentacao:teorica}, ou
 utilizando técnicas de salvamento do contexto dos processos, com isolação do contexto
 provida para contêineres \cite{muller2022architecture} com CRIU, ou com as técnicas de
 \textit{Event Sourcing}. No nosso serviço a parte de recuperação dos estados será
@@ -98,15 +98,14 @@ mas, só após a restauração finalizar, quando o estado do Interceptador retor
 Em \cite{vayghan2021kubernetes} algo semelhante foi feito sobre estados da aplicação sendo
 recuperada para impedir que requisições cheguem com estado desatualizado da aplicação.
 
-
 \subsection{A Arquitetura}
 
-As subseções acima trouxeram um pocuo dos problemas que temos que enfrentar e como
-resolvemos cada um dos problemas com algum componente do sistema. Nesta subseção, iremos
+As subseções acima trouxeram um pouco dos problemas que temos que enfrentar e como
+resolvê-los com algum componente do sistema. Nesta subseção, iremos
 abordar um pouco de como os componentes se comunicam entre a arquitetura e delimitar as
 funcionalidades de cada um dos componentes sem abordar nenhum tipo de implementação
-específica. Aqui, abordamos o que o Administrador de Estado, o Interceptador, o Volume, o
-Banco de dados e Conêiner são e fazem. A arquitetura de maneira geral está apresentada na Figura
+específica. Aqui, elicidamos o que o Administrador de Estado, o Interceptador, o Volume, o
+Banco de dados e Contêiner são e fazem. A arquitetura de maneira geral está apresentada na Figura
 \ref{fig:abstract-architecture}, e a chamamos de representação geral abstrata da arquitetura.
 
 \begin{figure}[h]
