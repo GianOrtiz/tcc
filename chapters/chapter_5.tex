@@ -29,13 +29,12 @@ Este capítulo pretende responder a algumas perguntas a partir da análise dos e
 	\item Existe impacto ao se utilizar o Interceptador para interceptar requisições a
 	aplicação alvo? Este impacto deve ser considerado ao se utilizar o Serviço nas
 	aplicações.
-	\item Qual o impacto de tempo para a aplicação ser restaurada quando analizado com
-	o tempo do Kubernetes realizar a restauração de uma falha em um contêiner? Qual o
-	impacto da adição da recuperação com técnicas de \textit{Event Sourcing}?
+	\item Qual o impacto de tempo para a aplicação ser restaurada com a implementação do
+	\textit{Checkpoint/Restore} com técnicas de \textit{Event Sourcing}?
 	\item Qual o impacto geral na vazão e latência da aplicação quando ela está sendo
 	interceptada pelo Interceptador? Qual a vazão e latência da aplicação quando ela
 	está sendo executada \textit{standalone}? Há um impacto pela adição do Interceptador?
-	\item Qual a vazão e latência durante a recuperação da aplicação pelas técnicas de
+	\item Qual a latência da aplicação durante a recuperação da aplicação pelas técnicas de
 	\textit{Event Sourcing}?
 \end{itemize}
 
@@ -45,8 +44,8 @@ aplicação alterou o estado do Interceptador, momento da introdução da falha 
 momento da detecção pelo Administrador de Estado e tempo até a aplicação retornar ao estado
 de Pronto. Análise de teste de carga para determinar a vazão e latência das requisições com
 diferentes cargas no sistema. A partir disto pretendemos responder as perguntas para esta
-análise. Também pontuasse que como a aplicação executa em um nó, as latências de rede não
-impactam tanto nos dados obtidos.
+análise. É importante destacar, que como a aplicação executa no mesmo nó, não há perdas
+significativas de latência para comunicação entre serviços.
 
 Para realizar o teste de carga, utilizamos a aplicação bombardier \cite{bombardier}, ela
 permite realizar um número arbitrário de requisições concorrentes, definindo a quantidade
@@ -64,8 +63,8 @@ da aplicação com o Interceptador utilizando memória para armazenamento das re
 da aplicação com o Interceptador utilizando um banco de dados SQL para armazenamento das
 requisições. Realizamos os mesmos testes de carga utilizando o bombardier para realizar
 requisições com N clientes paralelamente durante dez segundos. A partir da finalização
-das requisições obtivemos o valor médio da latência das requisições e pudemos construir 
-um gŕafico de vazão por latência para os três casos, que é mostrado na Figura
+das requisições obtivemos o valor de latência para o p95 da distribuição das requisições 
+ pudemos construir um gŕafico de vazão por latência para os três casos, que é mostrado na Figura
 \ref{fig:analysis-interceptor-standalone}.
 
 O gŕafico da Figura \ref{fig:analysis-interceptor-standalone} nos provê informações que já
@@ -80,7 +79,7 @@ quanto uma piora na questão da máxima vazão da aplicação. No caso da aplica
 implementação de armazenamento em memória, linha verde na Figura \ref{fig:analysis-interceptor-standalone},
 temos que o máximo de carga do serviço se dá entre dois mil a dois mil e setecentos clientes
 simultâneos. Há uma piora direta logo nos primeiros cinquenta clientes, onde a latência
-média tem seu valor 38.55ms. Isto mostra que o impacto do nosso Interceptador e pelas
+p95 tem seu valor 38.55ms. Isto mostra que o impacto do nosso Interceptador e pelas
 operações que ele faz, como, por exemplo, processamento da requisição obtendo apenas as
 partes necessárias para o armazenamento, acréscimo da versão de ordem da requisição,
 envio da requisição para a aplicação e posterior retorno da resposta para o cliente, geram
@@ -115,7 +114,7 @@ possibilidade de utilização de bancos mais rápidos, como de chave/valor ou de
 Para nível de comparação no impacto do banco de dados na aplicação, instrumentamos o
 código do Interceptador para capturar métricas sobre a latência em escrever a requisição
 no banco de dados. Nas requisições com trezentos clientes simultâneos que obtemos uma
-latência média de 1590ms, tivemos uma latência média para inserção da requisição no banco
+latência p95 de 1590ms, tivemos uma latência p95 para inserção da requisição no banco
 de 1117ms, um impacto de cerca de 70.25\% na latência da aplicação. Uma estratégia combinar
 a estratégia de implementação do armazenamento em memória com o armazenamento em banco de
 dados SQL. Teríamos uma lista com tamanho fixo de dados, que armazenaria as requisições em
@@ -140,7 +139,7 @@ durar mais tempo que o \textit{Checkpoint}.
 Coletamos dados para a latência das requisições que atingem o Interceptador em um período de
 tempo que inclui antes de uma falha na aplicação alvo, durante a recuperação da aplicação
 alvo e posteriormente da recuperação no mesmo teste. Estes testes nos proveram uma latência
-média de 7.3s para as requisições do período de tempo, onde já existiam mil requisições
+p95 de 7.3s para as requisições do período de tempo, onde já existiam mil requisições
 acumuladas para que ocorresse a reprojeção durante a recuperação e os tínhamos cem clientes
 realizando mil requisições simultâneas para a aplicação durante o período de tempo.
 
