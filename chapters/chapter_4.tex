@@ -192,9 +192,9 @@ Por fim, iniciamos o \textit{cluster} Kubernetes através dos comando no Código
 \ref{listing:kubernetes-conf}, desativamos o swap da máquina para não criar conflitos que podem
 ocorrer no kubelet. Outra seção do Código \ref{listing:kubernetes-conf} é a configuração do
 KUBECONFIG, que é a configuração que o kubectl utiliza para se comunicar com a API do Kubernetes.
-Ao final do listing nós adicionamos um controlador de rede para os Pods do nosso sistema, qualquer
+Ao final do código nós adicionamos um controlador de rede para os Pods do nosso sistema, qualquer
 um pode ser utilizado, mas optamos por utilizar o Calico \cite{calico} pela facilidade em
-instalação como vista na seção do Código \ref{listing:kubernetes-conf}
+instalação como vista na seção do Código \ref{listing:kubernetes-conf}.
 
 \begin{lstlisting}[language=bash,caption={Inicialização do Kubernetes, configuração de acesso para o kubectl e instalação do administrador de rede para Pods Calico.},label={listing:kubernetes-conf}]
 # Start Kubernetes
@@ -252,15 +252,15 @@ CRIU. De modo a realizar a comunicação com o kube-apiserver precisamos estar a
 com o Kubernetes. Deste modo, criamos um Secret no Kubernetes, uma configuração de segredo
 disponível na API do Kubernetes, com o certificado e key de assinatura para comunicação
 com o kube-apiserver, estes arquivos ficam localizados no cluster em
-/etc/kubernetes/pki/apiserver-kubelet-client.key e em
-/etc/kubernetes/pki/apiserver-kubelet-client.crt, adicionamos estes dois arquivos em um
+\texttt{/etc/kubernetes/pki/apiserver-kubelet-client.key} e em
+\texttt{/etc/kubernetes/pki/apiserver-kubelet-client.crt}, adicionamos estes dois arquivos em um
 Secret como no Código \ref{listing:kubelet-secret}. Então, podemos chamarmos a API
-do Kubernetes na rota <https://ip-do-cluster/checkpoint/namespace/pod/container>
+do Kubernetes na rota \texttt{<https://ip-do-cluster/checkpoint/namespace/pod/container>}
 utilizando o método HTTP POST, onde ip-do-cluster é o IP do \textit{cluster} Kubernetes,
 é o \textit{namespace} do Kubernetes em que se encontra a aplicação do Kubernetes, pod é
 o Pod que está executando a aplicação alvo e container o contêiner que está executando a
 aplicação alvo. A partir daí, um \textit{Checkpoint} é salvo na máquina em
-/var/lib/kubelet/checkpoints na forma de um arquivo compactado da forma
+\texttt{/var/lib/kubelet/checkpoints} na forma de um arquivo compactado da forma
 checkpoint-pod\_namespace-container-timestamp.tar, em que os valores são os mesmo,
 exceto, \textit{timestamp}, que representa a string do momento em que o \textit{Checkpoint}
 foi feito.
@@ -305,7 +305,7 @@ O controlador do Deployment tem como seu recurso monitorado os Deployments do
 no manifesto do Deploment, como \texttt{crsc.io/checkpoint-restore} e
 \texttt{crsc.io/checkpoint-interval}, que são respectivamente, o valor booleano que
 define se a aplicação é monitorada pelo Serviço ou não e o valor do intervalo de
-\textit{Checkpoint} ativo. O diagram da Figura \ref{fig:deployment-controller-diagram}
+\textit{Checkpoint} ativo. O diagrama da Figura \ref{fig:deployment-controller-diagram}
 define o funcionamento do controlador.
 
 \begin{figure}[h]
@@ -328,7 +328,7 @@ anotação \texttt{crsc.io/checkpoint-restore} o manifesto do Deployment é alte
 para adicionar o contêiner do Interceptador como um \textit{sidecar container}, um novo
 ReplicaSet é, então, criado pelo Kubernetes que criará um novo Pod com o nosso
 Interceptador. Ao mesmo tempo o controlador cria um novo Service para o Interceptador no
-novo Deployment que permite o Interceptador seja acessado através de todo o cluster, o
+novo Deployment que permite que o Interceptador seja acessado através de todo o cluster, o
 Kubernetes lida com a parte do DNS e das configurações de rede.
 
 Ao final temos a adição no manifesto do Deployment do conteúdo do contêiner como visto no
@@ -372,14 +372,14 @@ imagem à aplicação monitorada, entretanto, não conseguimos criar a imagem de
 \textit{Checkpoint} e esta parte não foi feita.
 
 Na Figura \ref{fig:restore-pod} temos o diagrama de como funciona esta parte. Primeiro o
-controlador recebe uma atualização de estado dos Pods, verificamos se o Pod é um Pod monitorado,
-caso seja e tenha um contêiner com falha, iremos adicioná-lo à fila de restauração. Caso a
+controlador recebe uma atualização de estado dos Pods, verificando se o Pod é um Pod monitorado,
+caso seja e tenha um contêiner com falha, ele será adicionado à fila de restauração. Caso a
 atualização de estado indique que ele está pronto iremos buscar o Pod na fila de restauração,
-então, editaremos a imagem da aplicação alvo para que seja a imagem do último \textit{Checkpoint}
-feito pelo controlador de Checkpoint. Após alterarmos a imagem, colocamos o Interceptador no
-estado Aguardo e pedimos para ele reprojetar as requisições a partir da última requisição
-recebida antes de se realizar o \textit{Checkpoint} atual. Ao final da reprojeção, alteramos
-o estado do Interceptador para Ativo e as requisições são encaminhadas para a aplicação alvo
+então, a imagem da aplicação alvo será editada para que seja a imagem do último \textit{Checkpoint}
+feito pelo controlador de Checkpoint. Após estabilização da imagem, colocamos o Interceptador no
+estado Aguardo e é solicitado a ele a reprojeção ads requisições a partir da última requisição
+recebida antes de se realizar o \textit{Checkpoint} atual. Ao final da reprojeção, o estado do
+Interceptador é alterado para Ativo e as requisições são encaminhadas para a aplicação alvo
 com o estado mais atual, fornecendo uma recuperação transparente ao usuário.
 
 \begin{figure}[h!]
@@ -401,7 +401,7 @@ irá pedir um novo \textit{Checkpoint} a API do kubelet e retornar sucesso. Apó
 este controlador irá obter esse \textit{Checkpoint} e criará uma imagem de contêiner no
 formato OCI com buildah.
 
-Como o este controlador também implementa uma parte do nosso Administrador de Estado da 
+Como este controlador também implementa uma parte do nosso Administrador de Estado da 
 arquitetura geral, ele também seria o responsável por salvar informações de metadados
 sobre a imagem de salvamento criada. Entretanto, não foi possível criar uma aplicação
 que conseguisse utilizar as bibliotecas do buildah para criação da imagem, muitos
@@ -420,11 +420,13 @@ buildah rm $newcontainer
 \end{lstlisting}
 
 Embora o \textit{Checkpoint} impeça as requisições de chegarem à aplicação alvo
-diretamente, ele ocorre de forma transparente ao usuário da aplicação. Não é
-necessário entender que ele está acontecendo e não se percebe a existência dele. 
-Estes \textit{Checkpoints} periódicos seriam utilizados para recuperar a aplicação
-ao último estado de forma mais rápida e eficiente como em \cite{vayghan2021kubernetes}
-\cite{muller2022architecture} \cite{oh2018stateful} e \cite{schmidttransparent}.
+diretamente, ele ocorre de forma transparente ao usuário da aplicação. O desenvolvedor
+não necessita configurar nada na aplicação e não há percepção para o usuário que um
+\textit{Checkpoint} está ocorrendo além de um possível aumento de latência como visto em
+\cite{schmidttransparent}. Estes \textit{Checkpoints} periódicos seriam utilizados para
+recuperar a aplicação ao último estado de forma mais rápida e eficiente como em
+\cite{vayghan2021kubernetes} \cite{muller2022architecture} \cite{oh2018stateful} e
+\cite{schmidttransparent}.
 
 \section{Checkpoint/Restore com técnicas de Event Sourcing}
 
@@ -448,7 +450,7 @@ a mesma que para a implementação com CRIU, exceto, que, não criamos o recurso
 caso, pois, não há necessidade. Devido ao fato de sempre estarmos salvando as requisições
 interceptados pelo Interceptador, sempre temos a ordem de requisições que precisamos
 executar para obter o mesmo estado na aplicação alvo. Não precisamos realizar um
-\textit{Checkpoint} periódico como no outro caso, pois, o salvamento de estado esta nos
+\textit{Checkpoint} periódico como no outro caso, pois, o salvamento de estado está nos
 eventos que são gerados pelas requisições. Neste controlador, também adicionamos o 
 \textit{sidecar container} ao Deployment e criamos o Service que redireciona requisições
 ao Interceptador. O Interceptador tem sempre a mesma implementação, o que permite ser
