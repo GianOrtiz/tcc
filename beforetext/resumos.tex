@@ -5,27 +5,27 @@
     \addtotextpreliminarycontent{Resumo em Português}
     \begin{otherlanguage*}{portuguese}
     \begin{resumo}[Resumo]
-		Em sistemas distribuidos, temos, cada vez a presença de virtualização leve,
-		através de contêineres, contribuindo para a rápida difusão deste meio para
-		criar aplicações, aliado a praticidade em se utilizar contêineres para
-		implantação de microsserviços e distribuição em serviços em nuvem. Entretanto,
-		este método possui alguns desafios para prover alta disponibilidade dos serviços.
-		Orquestradores de contêneires resolvem muitos dos desafios, como a escalabilidade,
-		a distribuições e administração de contêneires em \textit{clusters}. Porém,
-		alguns desafios persistem, como, parte do tema deste trabalho que é a alta
-		disponibilidade para serviços em contêineres do tipo \textit{Stateful}, provendo
-		tolerância a falhas a este tipo de serviço, que necessita de um estado para executar.
-		Para isso, utilizamos técnicas de \textit{Checkpoint/Restore} para realizar o
-		salvamento do estado e um serviço e posterior restauração do mesmo estado em caso de
-		falhas. Aliado a parte do padrão de projeto de \textit{Event Sourcing} para prover
+		Em sistemas distribuidos, percebemos a alta difusão da utilização de virtualização
+        leve, através do que são chamados de contêineres, para criação de implanatação de
+        novas aplicações, principalmente entre microsserviços e computação distribuída em
+        serviços em nuvem. Entretanto, este método possui alguns desafios para prover
+        alta disponibilidade dos serviços. Orquestradores de contêneires resolvem muitos
+        dos desafios, como a escalabilidade, a distribuições e administração de contêneires
+        em \textit{clusters}. Porém, alguns desafios persistem, como o tema deste trabalho
+        que é a alta disponibilidade para serviços em contêineres do tipo \textit{Stateful}.
+        Estes tipos de serviços necessitam que o estado seja persistido em memória e, em uma
+        falha, seja possível reiniciar o serviço para o mesmo estado anterior a falha. Neste
+        trabalho, utilizamos técnicas de \textit{Checkpoint/Restore} para realizar o salvamento
+        do estado de um serviço e posteriormente realizar a restauração do serviço, em caso de
+        uma falha. Aliado a técnicas do padrão de projeto de \textit{Event Sourcing} para prover
 		diferentes tipos de recuperação. Ainda, focamos em prover uma solução que funcione
 		de maneira transparente no orquestrador de contêneires Kubernetes, que é atualmente
-		o mais utilizado. Este trabalho desenvolverá uma ferramenta de
-		\textit{Checkpoint/Restore} para contêineres \textit{Stateful} executando em
-		Kubernetes, através do padrão de projeto de \textit{Event Sourcing}, também temos
-		uma implementação em andamento que utiliza técnicas padrão de
-		\textit{Checkpoint/Restore} como CRIU, possibilitando a falha do container e
-		posterior recuperação do mesmo com transparência.
+		o mais utilizado. Por fim, conseguimos prover um serviço de \textit{Checkpoint/Restore}
+        para Kubernetes em contêineres do tipo \textit{Stateful} através de técnicas do padrão
+        de projeto \textit{Event Sourcing} utilizando uma arquitetura agnóstica a tecnoligias.
+        Também conseguimos abordar uma forma de realizar o mesmo salvamento do estado e posterior
+        recuperação utilizando CRIU e buildah para construção de imagens de recuperação do estado
+        seguindo o padrão do \textit{Open Container Initiative}.
 
 %    		\textbf{Palavras-chave}: Sistemas distribuídos. Serviços \textit{Stateful}.
 %    		Tolerância a falhas. Contêineres. Orquestação de Contêineres. \textit{Checkpoint/Restore}.
@@ -47,20 +47,20 @@
     \begin{resumo}[Abstract]
 
         The world of distributed systems is seeing the increase in the usage
-        of lightweight virtualization, containers, to create applications, like
-        microservices distributed at the cloud systems. But, the usage of
+        of lightweight virtualization, also known as containers, to create
+        applications, like microservices distributed in cloud systems. But, the usage of
         containers for distributed system has many challenges on the high availability
-        of the service, container orchestrators, like Kubernetes, solve this challenges
+        of the service. Container orchestrators, like Kubernetes, solve this challenges
         by providing tools to manage containers, scale them and distribute them. Although,
         the high availability of Stateful containers has other challenges than Stateless
-        containers, like the fault tolerancy on achieving the same state that the previous
+        containers, like the fault tolerance on achieving the same state that the previous
         failed application, this is the focus of this work. To achieve the same state as the
         previous failed container, we use Checkpoint/Restore techniques and the Event
-        Sourcing pattern, we can checkpoint the state of the application and when it fails
-        we restore it to the previous state. The usage of the Event Sourcing is to give a
-        new way to achieve the Checkpoint/Restore, we will also show how we can achieve
+        Sourcing pattern to checkpoint the state of the application and when it fails
+        we restore it to the previous state. The usage of the Event Sourcing pattern is to
+        investigate a new way to achieve the Checkpoint/Restore, also we show how to achieve
         the same result using traditional Checkpoint/Restore on Linux with CRIU. This work
-        creates a framework for Kubernetes for fault tolerancy with Checkpoint/Restore
+        creates a framework for Kubernetes for fault tolerance with Checkpoint/Restore
         using Event Sourcing.
 
         \imprimirpalavraschave{Keywords}{\begin{inparaitem}[]\palavraschaveingles\end{inparaitem}}
