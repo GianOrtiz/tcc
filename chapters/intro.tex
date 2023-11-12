@@ -84,15 +84,17 @@
 Com o crescimento de técnicas de utilização de microsserviços e computação em
 nuvem, se criou uma alta necessidade para a alta disponibilidade dos serviços
 \cite{vayghan2021kubernetes}. A virtualização leve através da utilização de
-contêineres, desenvolvidos em cima das funcionalidades do Linux, possibilitou
-uma melhoria no processo de disponibilização destes microsserviços na nuvem
-\cite{laadan2010linux}. Desta forma, para facilitar o processo de gerenciamento
-e comunicação entre diversos contêineres de microsserviços na nuvem, aplicações
-com este intuito foram criadas \cite{vayghan2021kubernetes}, elas são chamadas
-de orquestradores de contêineres, entre elas a mais popular é o Kubernetes
-\cite{kubernetes}.
+contêineres, desenvolvidos em cima das funcionalidades do Linux, como \textit{cgroups}
+e \textit{namespaces}, que possibilitam a limitação e priorização de recursos sem máquinas
+virtuais e a isolação completa de processos, redes e arquivos, respectivamente,
+possibilitou uma melhoria no processo de disponibilização destes microsserviços
+na nuvem \cite{laadan2010linux}. Desta forma, para facilitar o processo de
+gerenciamento e comunicação entre diversos contêineres de microsserviços na
+nuvem, aplicações com este intuito foram criadas \cite{vayghan2021kubernetes},
+elas são chamadas de orquestradores de contêineres, entre elas a mais popular é
+o Kubernetes\cite{kubernetes}.
 
-Em geral, os orquestradores de contêineres proveem um grande ferramental para a
+Em geral, os orquestradores de contêineres provêem um grande ferramental para a
 replicação, recuperação e manutenção de alta disponibilidade para os contêineres,
 suprindo a maioria das necessidades que aplicações sem estado de memória interna,
 do tipo \textit{Stateless}, possuem \cite{vayghan2021kubernetes}. Entretanto,
@@ -103,27 +105,28 @@ adoção das práticas de \textit{Checkpoint/Restore} \cite{muller2022architectu
 para o melhoria do tempo da recuperação de contêineres com falhas. Este tipo de
 técnica permite salvar o estado de memória em uma nova imagem para recuperá-la
 mais tarde. Embora, orquestradores de contêineres possuam suporte para aplicações
-com estado em armazenamento de dados, como o StatefulSet no Kubernetes, não existe
-suporte nativo para o estado em memória da aplicação \cite{tran2022proactive}.
+com estado em armazenamento de dados persistente, como o StatefulSet no Kubernetes,
+não existe suporte nativo para o \textit{Checkpoint} de estado em memória da
+aplicação\cite{tran2022proactive}.
 
-Desta forma, este trabalho propõe uma aplicação transparente para realizar o
+Desta forma, este trabalho desenvolve um serivço transparente para realizar o
 \textit{Checkpoint/Restore} de aplicações \textit{Stateful} executando em
-contêineres no Kubernetes. Esta aplicação irá possibilitar a tolerância a falhas
-das aplicações com estado e também melhorar a alta disponibilidade destes serviços,
-melhorando também a qualidade de serviço de aplicações distribuídas em nuvem.
+contêineres no Kubernetes. Este serviço possibilita a tolerância a falhas
+das aplicações com estado, onde, quando uma falha ocorrer a aplicação será reiniciada
+ao último ponto de execução antes da falha.
 
 \section{Objetivos}
 
 \subsection{Objetivo Geral}
 
-Desenvolver uma aplicação transparente para realização de \textit{Checkpoint/Restore}
+Desenvolver um serviço transparente para realização de \textit{Checkpoint/Restore}
 de aplicações de contêineres \textit{Stateful} que execute de maneira nativa no
 orquestrador de contêineres Kubernetes.
 
 \subsection{Objetivos Específicos}
 
 \begin{itemize}
-    \item Desenvolver uma aplicação transparente para \textit{Checkpoint/Restore}
+    \item Desenvolver um serviço transparente para \textit{Checkpoint/Restore}
     de aplicações \textit{Stateful} executando no orquestrador de contêineres Kubernetes.
     \item Coletar métricas da performance da solução implementada para garantir
     eficiência no \textit{Checkpoint/Restore}, comparando com execução sem a aplicação.
@@ -141,8 +144,8 @@ trabalhos relacionados com o nosso tema e o que foi desenvolvido, o
 \autoref{cap:servico} aborda a definição do nosso serviço, sua arquitetura e
 quais tecnologias serão utilizadas para prover o \textit{Checkpoint/Restore},
 no \autoref{cap:implementacao:servico} apresentamos a implementação do serviço, como
-ele foi feito, o que enfretamos de dificuldado na implementação, quais desafios foram
-resolvidos, quais desafios não foram resolvidos, abordamos de duas perspectivas
+ele foi feito, o que enfretamos de dificuldade na implementação, quais desafios foram
+resolvidos, quais desafios não foram resolvidos, abordamos duas perspectivas
 diferentes, a da implementação com técnicas de \textit{Event Sourcing} e outra com a
 implementação com a utilização de CRIU, no \autoref{cap:analise:experimental} apresentamos
 as análises experimentais que realizamos sobre o serviço, coletando métricas e entendendo
