@@ -149,7 +149,7 @@
      \ABNTEXfontereduzida
      \captiondelim{\ABNTEXcaptionfontedelim}
      % https://tex.stackexchange.com/questions/515460/misplaced-noalign-captionsetup-noalign-when-using-captionsetup-inside-mem
-     \caption@setlabelseparator{colon}%
+    %  \caption@setlabelseparator{colon}%
      \@makecaption{\ABNTEXfontereduzida #1}{\ignorespaces\ABNTEXfontereduzida #2}\par
   \endgroup}
 
@@ -248,7 +248,7 @@
   \renewcommand{\resumoname}{Abstract}
   \renewcommand{\listadesiglasname}{List of abbreviations and acronyms}
   \renewcommand{\listadesimbolosname}{List of symbols}
-  \renewcommand{\fontename}{Source}
+  \renewcommand{\fontename}{Fonte}
   \renewcommand{\notaname}{Note}
    %% adjusts names used by \autoref
   \renewcommand{\pageautorefname}{page}

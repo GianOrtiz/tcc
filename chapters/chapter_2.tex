@@ -75,7 +75,7 @@ ao Kubernetes. Nota-se, também, que alguns pontos de melhoria podem ser
 priorizados no desenvolvimento de nosso trabalho para ter uma solução mais
 abrangente de outras aplicações.
 
-Já em \cite{vayghan2021kubernetes}, os autores propõe uma extensão das
+Já em \cite{vayghan2021kubernetes}, os autores propõem uma extensão das
 funcionalidades do Kubernetes para contêineres \textit{Stateful} para
 prover alta disponibilidade (\textit{High Availability}) à réplicas de um mesmo
 microsserviço. Isto implica, que será necessário manter a aplicação disponível
@@ -93,7 +93,7 @@ solução que provenha mais velocidade na reinicialização de Pods falhantes.
 A solução proposta consiste em ter dois Pods disponíveis provendo o mesmo
 serviço em determinado tempo. Um deles é classificado como o ativo, enquanto
 o outro é classificado como o "em espera". O Pod que serve requisições é o
-ativo, quando este falha um \textit{controller} criado para isso, State Controller,
+ativo, quando este falha, um \textit{controller} criado para isso, State Controller,
 copia o estado do Pod falhante para o Pod reserva e cria um novo Service para ele
 servir as requisições. Quando o Pod ativo é recuperado, se faz o caminho inverso
 para ele voltar a ser o Pod que recebe as requisições. A replicação de estado no
@@ -208,7 +208,7 @@ Em \cite{oh2018stateful}, os autores desenvolvem uma técnica de
 \textit{Checkpoint/Restore} para migração de \textit{clusters} com contêineres
 StatefulSet. Como prova de conceito é construída uma aplicação em cima de
 Kubernetes e CRIU para realização do \textit{Checkpoint/Restore}. Alguns
-motivos levam um contêineres em um orquestrador de contêineres ter que ser
+motivos levam contêineres em um orquestrador de contêineres ter que ser
 movido de um nó para outro, como manutenção do nó atual necessitando de uma
 reinicialização, falha do nó atual ou escalonamento e balanceamento de carga
 das aplicações do \textit{cluster}. Logo, se um contêiner possui estado,
@@ -223,10 +223,10 @@ Já que, para salvar o estado em um volume é necessário que a aplicação saib
 realizar esta tarefa, então, não é transparente ao desenvolvedor. Também o
 desgaste pelo acesso ao volume que pode ser intermediado por uma API de terceiro,
 como no caso de um volume de dados armazenado na EC2 API da Amazon. A partir
-desta análise, os autores propõe uma abordagem através da técnica de
+desta análise, os autores propõem uma abordagem através da técnica de
 \textit{Checkpoint/Restore} com criação de uma imagem com o estado salvo do contêiner.
 
-Para realização da migração eles propõe uma solução que consiste em três
+Para realização da migração eles propõem uma solução que consiste em três
 estágios: pré migração, migração e pós-migração. Na pré migração é iniciado
 o processo de migração por qualquer motivo, como escalonamento, depois se elege
 novos nós para receberem os contêineres do nó antigo, por fim, se criam as
@@ -239,9 +239,9 @@ realizada a alocação de recursos antigos, como balanceadores de carga ou
 registros \textit{DNS} para o novo contêiner.
 
 Segundo os autores, a solução proposta ainda possui alguns problemas. No
-caso de falhas do nó ela não consegue realizar a migração, embora
+caso de falhas do nó ela não consegue realizar a migração, embora o
 \textit{checkpoint} periódico resolveria esta dor, problemas com a internet
-para envio da imagem são ignorados. Mas, com a proposta se pode obter uma
+para envio da imagem são ignorados no trabalho. Mas, com a proposta se pode obter uma
 transparência a nível de aplicação da migração do contêiner, se tem uma
 migração leve e ágil, já que, não se usa um volume e, não tem o trabalho
 a mais de comunicação com possíveis APIs externas e leitura/escrita de volumes.
@@ -252,7 +252,7 @@ um contador a cada requisição com o estado salvo em memória. Também se
 implementou a solução na linguagem Go, se comunicando com a \textit{engine}
 Docker e utilizando o CRIU para realizar o \textit{checkpoint}. Como
 observado no trabalho, o tempo de inatividade no processo de migração se
-mostra baixo, 576.61 em média, sendo que o tempo de latência da aplicação
+mostra baixo, 576.61ms em média, sendo que o tempo de latência da aplicação
 não foi alterado durante a utilização da imagem. Também não houveram
 falhas para enviar a imagem de \textit{checkpoint} pela rede para o novo nó.
 
@@ -270,7 +270,7 @@ de uma falha de nó, como apontado por eles, que por sugestão dos autores
 poderia ser resolvida por monitoramento do nó ou mesmo \textit{checkpoints}
 periódicos das aplicações com estado.
 
-Já em \cite{tran2022proactive}, os autores propõe uma implementação
+Já em \cite{tran2022proactive}, os autores propõem uma implementação
 para migração de serviços \textit{Stateful} que seja proativa, ou seja,
 que perceba antes de uma falha ocorrer no nó e realize a migração para
 um novo nó sem que haja a necessidade do nó falhar antes, isto aumenta
@@ -282,7 +282,7 @@ avaliar a atividade proativa de \textit{Checkpoint/Restore} para
 migração dos contêineres. Desta forma, se utilizou o algoritmo para prever
 a sobrecarga do uso de CPU como falha.
 
-Para realizar o \textit{Checkpoint/Restore} os autores propõe uma solução
+Para realizar o \textit{Checkpoint/Restore} os autores propõem uma solução
 baseada no StatefulSet do Kubernetes, assim como em \cite{vayghan2021kubernetes},
 e também um salvamento dos dados em memória através do CRIU, como em
 \cite{muller2022architecture}. Desta forma, se tem o estado total da aplicação,
@@ -332,7 +332,7 @@ o Service para o novo Pod. Também alteraram a definição da interface de
 as chamadas diretamente pela API do Kubernetes. Por fim, foi utilizado um servidor
 de arquivos para armazenar as imagens de \textit{Checkpoint} entre os nós de
 migração, desta forma, basta montar o volume nos dois nós e eles estariam
-compartilhando as imagens, desta forma, também se remove a necessidade de envio
+compartilhando as imagens, também se remove a necessidade de envio
 por internet da imagem entre os nós e diminui as comunicações.
 
 Para realizar a validação da solução se utilizou quatro \textit{clusters} de
