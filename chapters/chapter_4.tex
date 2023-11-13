@@ -98,8 +98,10 @@ funcionarem. Para configurar um \textit{cluster} Kubernetes com todas as funcion
 necessárias utilizamos Ubuntu 20.04, em máquinas com processador Intel Broadwell de
 arquitetura x86/64 com 2vCPU e 4GB de memória, a partir disso precisamos executar a
 sequência de comandos no Código \ref{listing:setup-script}, neste código utilizamos
-o cri-o na versão 1.25, que é a versão necessária para fornecer suporte para CRIU no
-\textit{Checkpoint} com o Kubernetes.
+o cri-o na versão 1.25, que é a versão mínima necessária para fornecer suporte à
+funcionalidade de \textit{Container Checkpoint} utilizando CRIU no Kubernetes, que será
+a funcionalidade utilizada na implementação com CRIU para prover salvamento do estado
+da aplicação.
 
 \begin{lstlisting}[language=bash,caption={Comandos de configuração da máquina para CRIU e cri-o.},label={listing:setup-script}]
    sudo sh -c 'echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /" > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list'
@@ -131,9 +133,11 @@ drop_infra_ctr = false # remove a infra quando um pod não tem uma id de process
 
 Para que o CRIU possa utilizar o runc corretamente, também devemos editar a configuração
 do CRIU. No Código \ref{listing:runc-conf}, editamos o arquivo /etc/criu/runc.conf para 
-incluir configurações para fechar as conexões TCP, para ignorar conexões TCP já feitas,
-onde o cliente deverá refazer as requisições, e desativamos a adiministração e cgroups
-feita pela CRIU para utilizar o padrão.
+incluir configurações para fechar as conexões TCP no caso de uma restauração iniciada,
+de modo que o cliente que iniciou a conexão TCP deverá refazê-la, para ignorar conexões
+TCP já feitas no momento do \textit{Checkpoint}, onde o cliente também deverá refazer as
+requisições, e desativamos a adiministração e cgroups feita pelo CRIU para utilizar o padrão,
+para que seja possível executar o \textit{runc} no mesmo cgroup que cri-o e kubelet.
 
 \begin{lstlisting}[language=plaintext,caption={Configuração a ser incluída no arquivo de configurações do runc para o CRIU.},label={listing:runc-conf}]
 tcp-close # fecha as conexões TCP
@@ -145,8 +149,9 @@ A próxima parte requer que tenhamos buildah instalado e o componentes principai
 mestre do Kubernetes, o kubeadm e o kubelet, como também o kubectl para acessar o cluster
 através da  API do Kubernetes. Os comandos para instalação destes pacotes e componentes podem
 ser instalados através do Código \ref{listing:kubernetes-setup}. O comando \texttt{sudo apt-mark hold}
-é necessário para fixar as versões de instalação dos componentes do Kubernetes nas suas
-versões em caso de atualização do sistema.
+é necessário para que seja possível congelarmos a versão em utilização dos pacotes que especificamos,
+neste caso os pacotes importantes para funcionamento do Kubernetes, que devem permanecer na mesma
+versão para possibilitar o funcionamento correto do \textit{cluster}.
 
 \begin{lstlisting}[language=bash,caption={Instalação dos pacotes necessários para Kubernetes e buildah.},label={listing:kubernetes-setup}]
 sudo apt-get install -y apt-transport-https ca-certificates curl buildah make
