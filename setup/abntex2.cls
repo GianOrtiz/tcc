@@ -226,6 +226,7 @@
   \renewcommand{\listtablename}{Lista de tabelas}
   \renewcommand{\figurename}{Figura}
   \renewcommand{\tablename}{Tabela}
+  \renewcommand{\chaptername}{Capítulo}
   %% ajusta nomes usados com a macro \autoref
   \renewcommand{\pageautorefname}{p\'agina}
   \renewcommand{\sectionautorefname}{se{\c c}\~ao}
@@ -239,6 +240,7 @@
   \renewcommand{\epigraphname}{Epigraph}
   \renewcommand{\dedicatorianame}{Dedication}
   \renewcommand{\errataname}{Errata sheet}
+  \renewcommand{\chaptername}{Capítulo}
   \renewcommand{\figurename}{Figura}
   \renewcommand{\tablename}{Tabela}
   \renewcommand{\agradecimentosname}{Agradecimentos}
