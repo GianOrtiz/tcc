@@ -195,6 +195,7 @@
 
         % Add the table of contents to the brief table of contents
         % https://tex.stackexchange.com/questions/234398/list-of-figures-and-tables-when-there-are-no-figures-or-tables
+        \renewcommand{\contentsname}{Conteúdo}
         \whenlistisnotempty{\contentsname}{%
             \addtotextpreliminarycontent{\contentsname}
             \tableofcontents

@@ -224,6 +224,8 @@
   \renewcommand{\indexname}{\'Indice}
   \renewcommand{\listfigurename}{Lista de ilustra\c{c}\~{o}es}
   \renewcommand{\listtablename}{Lista de tabelas}
+  \renewcommand{\figurename}{Figura}
+  \renewcommand{\tablename}{Tabela}
   %% ajusta nomes usados com a macro \autoref
   \renewcommand{\pageautorefname}{p\'agina}
   \renewcommand{\sectionautorefname}{se{\c c}\~ao}
@@ -237,6 +239,8 @@
   \renewcommand{\epigraphname}{Epigraph}
   \renewcommand{\dedicatorianame}{Dedication}
   \renewcommand{\errataname}{Errata sheet}
+  \renewcommand{\figurename}{Figura}
+  \renewcommand{\tablename}{Tabela}
   \renewcommand{\agradecimentosname}{Agradecimentos}
   \renewcommand{\anexoname}{ANNEX}
   \renewcommand{\anexosname}{Annex}
