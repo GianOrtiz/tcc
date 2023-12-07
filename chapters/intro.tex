@@ -91,7 +91,7 @@ possibilitou uma melhoria no processo de disponibilização destes microsserviç
 na nuvem \cite{laadan2010linux}. Desta forma, para facilitar o processo de
 gerenciamento e comunicação entre diversos contêineres de microsserviços na
 nuvem, aplicações com este intuito foram criadas \cite{vayghan2021kubernetes},
-elas são chamadas de orquestradores de contêineres, entre elas a mais popular é
+chamadas de orquestradores de contêineres, entre elas a mais popular é
 o Kubernetes\cite{kubernetes}.
 
 Em geral, os orquestradores de contêineres provêem um grande ferramental para a
@@ -109,7 +109,7 @@ com estado em armazenamento de dados persistente, como o StatefulSet no Kubernet
 não existe suporte nativo para o \textit{Checkpoint} de estado em memória da
 aplicação\cite{tran2022proactive}.
 
-Desta forma, este trabalho desenvolve um serivço transparente para realizar o
+Desta forma, este trabalho desenvolve um serviço transparente para realizar o
 \textit{Checkpoint/Restore} de aplicações \textit{Stateful} executando em
 contêineres no Kubernetes. Este serviço possibilita a tolerância a falhas
 das aplicações com estado, onde, quando uma falha ocorrer a aplicação será reiniciada
@@ -130,8 +130,8 @@ orquestrador de contêineres Kubernetes.
     de aplicações \textit{Stateful} executando no orquestrador de contêineres Kubernetes.
     \item Coletar métricas da performance da solução implementada para garantir
     eficiência no \textit{Checkpoint/Restore}, comparando com execução sem a aplicação.
-    \item Identificar e avaliar classes de problemas ao qual a ferramenta não é possível
-    ser utilizada.
+    \item Identificar e avaliar classes de problema em que a ferramenta não tem adequação para
+    utilização.
 \end{itemize}
 
 \section{Organização do Trabalho}
@@ -139,17 +139,17 @@ orquestrador de contêineres Kubernetes.
 O restante desse trabalho está organizado da seguinte maneira: o
 \autoref{cap:fundamentacao:teorica} apresenta alguns conceitos teóricos e técnicos
 de algumas ferramentas e paradigmas diretamente relacionados ao desenvolvimento
-dessa monografia, na sequência, o \autoref{cap:trabalhos:relacionados} apresenta 
-trabalhos relacionados com o nosso tema e o que foi desenvolvido, o
+dessa monografia. Na sequência, o \autoref{cap:trabalhos:relacionados} apresenta 
+trabalhos relacionados com o nosso tema e o que foi desenvolvido. O
 \autoref{cap:servico} aborda a definição do nosso serviço, sua arquitetura e
-quais tecnologias serão utilizadas para prover o \textit{Checkpoint/Restore},
-no \autoref{cap:implementacao:servico} apresentamos a implementação do serviço, como
+quais tecnologias serão utilizadas para prover o \textit{Checkpoint/Restore}.
+No \autoref{cap:implementacao:servico} apresentamos a implementação do serviço, como
 ele foi feito, o que enfretamos de dificuldade na implementação, quais desafios foram
 resolvidos, quais desafios não foram resolvidos, abordamos duas perspectivas
 diferentes, a da implementação com técnicas de \textit{Event Sourcing} e outra com a
-implementação com a utilização de CRIU, no \autoref{cap:analise:experimental} apresentamos
+implementação com a utilização de CRIU. No \autoref{cap:analise:experimental} apresentamos
 as análises experimentais que realizamos sobre o serviço, coletando métricas e entendendo
-os resultados obtidos, por fim, no \autoref{cap:conclusion} são apresentadas
+os resultados obtidos. Por fim, no \autoref{cap:conclusion} são apresentadas
 as considerações finais reforçando os resultados obtidos, apresentando partes que não
 conseguimos alcançar do trabalho e cobrindo possíveis trabalhos futuros.
 
