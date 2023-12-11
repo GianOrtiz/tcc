@@ -64,8 +64,11 @@ da aplicação com o Interceptador utilizando um banco de dados SQL para armazen
 requisições. Realizamos os mesmos testes de carga utilizando o bombardier para realizar
 requisições com N clientes paralelamente durante dez segundos. A partir da finalização
 das requisições obtivemos o valor de latência para o p95 da distribuição das requisições 
- pudemos construir um gŕafico de vazão por latência para os três casos, que é mostrado na Figura
-\ref{fig:analysis-interceptor-standalone}.
+pudemos construir um gŕafico de vazão por latência para os três casos, que é mostrado na Figura
+\ref{fig:analysis-interceptor-standalone}, onde tomamos um acréscimo de cinquenta clientes a cada
+novo ponto para a construção das curvas até dez mil clientes. Alguns pontos destacados nas curvas
+facilitam a comparação entre elas, mas, também são destacados pontos importantes em momentos
+diferentes da curva, pois, nem todos os testes puderam ser finalizados com cada implementação.
 
 O gŕafico da Figura \ref{fig:analysis-interceptor-standalone} nos provê informações que já
 esperávamos, mas serão confirmadas por ele. Na aplicação \textit{standalone}, linha em vermelho,
@@ -159,7 +162,9 @@ degrada a ponto de não possibilitar testes com as configurações de \textit{cl
 Depois repetimos o mesmo teste com cada uma delas, ao alcançar o estado a aplicação terá uma falha
 ocasionada pela interrupção da execução do container pela ferramenta crictl. Após a falha,
 a recuperação deve ocorrer, neste momento, passamos a realizar um teste de carga igual para
-todos os casos, cem requisições serão feitas de maneira concorrente entre dez clientes.
+todos os casos, cem requisições serão feitas de maneira concorrente entre dez clientes. Todos
+os testes foram realizados em um conjunto de dez tentativas, onde se tomou como valor para análise
+o resultado do p95 entre eles.
 
 \begin{table}[htb]
 \caption[Latência durante recuperação de requisições acumuladas.]{Latência durante recuperação de requisições acumuladas.}
