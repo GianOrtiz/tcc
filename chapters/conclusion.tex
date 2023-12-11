@@ -33,7 +33,7 @@
 	onde verificamos que a implementação necessita de melhorias na performance para
 	que seja possível ser utilizada em aplicações em ambientes de produção. Como
 	mostramos no capítulo existe uma evidência de que o armazenamento persistente
-	através de um banco de dados SQL gera muita sobrecarga no sistema, precisamos
+	através de um banco de dados SQL gera muita sobrecarga no sistema. Precisamos
 	trabalhar em cima deste ponto, com modificações unindo implementação com
 	armazenamento em memória e \textit{Checkpoint} com CRIU. Esta perda de
 	performance já era esperada no início do trabalho.
@@ -52,24 +52,24 @@
 \section{Trabalhos futuros}
 
 Como trabalhos futuros podemos listar alguns pontos que faltaram fechar netes trabalho.
-O primeiro é a implementação com CRIU para o \textit{Checkpoint/Restore}, este trabalho
+O primeiro é a implementação com CRIU para o \textit{Checkpoint/Restore}. Este trabalho
 mostrou que é possível utilizar a arquitetura proposta para realizar o
 \textit{Checkpoint/Restore}, mas não houve a finalização da implementação com CRIU,
 porém listamos as partes e problemas que faltam para ser efetivada a implementação. Com
 uma implementação com CRIU, podemos unir a implementação com técnicas de
 \textit{Event Sourcing} para criar um serviço adaptativo que permita trocar o tipo de
 restauração e definir o momento do início dos salvamentos de estado ativos através do
-CRIU com base na análise da performance das duas implementações. Seguindo os trabalhos
+CRIU com base na análise da performance das duas implementações, seguindo os trabalhos
 de \cite{muller2022architecture}, onde nossa arquitetura foi inspirada. 
 
 Neste trabalho em momento algum utilizamos técnica preditivas para detectar o momento
 que a aplicação poderia falhar, então, em determinados momentos poderiamos ter uma
-requisição interceptada pelo Interceptador e que não tenha sido enviada a aplicação
-falhante, em \cite{tran2022proactive} houve uma implementação de predição, poderíamos
-adicionar isto a nossa implementação para prover um Serviço mais ativo na recuperação,
+requisição interceptada pelo Interceptador e que não tenha sido enviada à aplicação
+com falhas. Em \cite{tran2022proactive} houve uma implementação de predição, que poderia
+ser adicionada a nossa implementação para prover um Serviço mais ativo na recuperação,
 que não espere a falha acontecer para agir.
 
-Nosso trabalho não agiu com aplicações distribuídas geograficamente, isto mostra uma
+Nosso trabalho não agiu com aplicações distribuídas geograficamente; Isto mostra uma
 nova perspectiva, pois, será necessário espalhar os conteúdos tanto do Interceptador
 quanto de imagens geradas para outros nós geograficamente distribuídos o que gera
 latência de rede e tempo de restauração diferente dependendo da localização geográfica
@@ -78,10 +78,10 @@ distribuição geográfica e como poderíamos fazer para diminuir a latência at
 distribuição dos dados armazenados persistentemente.
 
 O trabalho também não cobre aplicações que tenham mais de uma réplica com estado da
-mesma aplicação. Neste Serviço cobrimos apenas aplicações com uma réplica,
-aplicações com diversas réplicas necessitam de coordenaçao entre os interceptadores
+mesma aplicação. Neste Serviço cobrimos apenas aplicações com uma réplica.
+Aplicações com diversas réplicas necessitam de coordenaçao entre os interceptadores
 para acordar em uma ordem das requisições com algoritmos de consenso para resolver
-estes problemas, aliado ao problema de aplicações geograficamente distribuídas
+estes problemas. Aliado ao problema de aplicações geograficamente distribuídas
 também temos o consenso entre estas os diferentes nós geograficamente distribuídos.
 
 Por fim, é possível aproveitar ainda mais de conceitos de \textit{Event Sourcing}.
