@@ -21,12 +21,12 @@
 
 Este capítulo apresenta a análise experimental sobre o Serviço criado. Para que seja possível
 validar o Serviço uma aplicação de testes foi criada em Go, que é um acrescentador de valores
-em memória, sempre que uma requisição chega a ele, este incrementa um no seu valor em memória.
+em memória. Sempre que uma requisição chega a ele, este incrementa um no seu valor em memória.
 Esta é uma aplicação \textit{Stateful} e, portanto, é passível de ser utilizada no nosso Serviço.
 Este capítulo pretende responder a algumas perguntas a partir da análise dos experimentos:
 
 \begin{itemize}
-	\item Existe impacto ao se utilizar o Interceptador para interceptar requisições a
+	\item Existe impacto ao se utilizar o Interceptador para interceptar requisições à
 	aplicação alvo? Este impacto deve ser considerado ao se utilizar o Serviço nas
 	aplicações.
 	\item Qual o impacto de tempo para a aplicação ser restaurada com a implementação do
@@ -42,16 +42,16 @@ Para responder estas perguntas fizemos primeiro uma instrumentação no Serviço
 pudessemos coletar pontos importante para análise, como, por exemplo, momentos em que a
 aplicação alterou o estado do Interceptador, momento da introdução da falha do Interceptador,
 momento da detecção pelo Administrador de Estado e tempo até a aplicação retornar ao estado
-de Pronto. Análise de teste de carga para determinar a vazão e latência das requisições com
+de Pronto. A análise de teste de carga para determinar a vazão e latência das requisições com
 diferentes cargas no sistema. A partir disto pretendemos responder as perguntas para esta
 análise. É importante destacar, que como a aplicação executa no mesmo nó, não há perdas
 significativas de latência para comunicação entre serviços.
 
-Para realizar o teste de carga, utilizamos a aplicação bombardier \cite{bombardier}, ela
+Para realizar o teste de carga, utilizamos a aplicação bombardier \cite{bombardier}, que
 permite realizar um número arbitrário de requisições concorrentes, definindo a quantidade
-de requisições e o tamanho da concorrência, isto nos permite testar a aplicação sobre uma
+de requisições e o tamanho da concorrência, que nos permite testar a aplicação sob uma
 carga mais real. Para coleta de outras métricas utilizamos horário de início e fim de cada
-uma das modificações, como o Serviço e a aplicação executam na mesma máquina o horário é
+uma das modificações. O Serviço e a aplicação executam na mesma máquina o horário é
 igual para todos e não é necessário sincronização de relógios entre máquinas.
 
 \section{Análise da inteterferência do Interceptador na aplicação}
@@ -95,10 +95,10 @@ na Figura \ref{fig:analysis-interceptor-standalone}, temos a pior performance de
 se deve principalmente por dois fatores, da sobrecarga do sistema que realizamos os experimentos,
 já que este estava executando o Kubernetes, um banco de dados, nosso Serviço e a aplicação
 em uma máquina de 2vCPU e 4GB de memória, e também pela latência na inserção das entradas
-de requisições no banco de dados. Como podemos ver na \ref{fig:analysis-interceptor-standalone},
+de requisições no banco de dados. Como podemos ver na Figura \ref{fig:analysis-interceptor-standalone},
 a capacidade máxima do sistema é atingida muito rapidamente, entre trezentos e quinhentos
 clientes simultâneos. A aplicação também apresenta a pior performance em latência já no
-começo dos expirmentos com cinquenta clientes simultâneos, com uma latência de 151.94ms,
+começo dos experimentos com cinquenta clientes simultâneos, com uma latência de 151.94ms,
 quase 400\% a mais que na implementação com o Interceptador com armazenamento em memória e
 quase 3000\% a mais que na aplicação \textit{standalone}. Para utilizar essa solução em
 um ambiente de produção seria necessário deixar a aplicação mais performática, através da
@@ -115,14 +115,13 @@ Para nível de comparação no impacto do banco de dados na aplicação, instrum
 código do Interceptador para capturar métricas sobre a latência em escrever a requisição
 no banco de dados. Nas requisições com trezentos clientes simultâneos que obtemos uma
 latência p95 de 1590ms, tivemos uma latência p95 para inserção da requisição no banco
-de 1117ms, um impacto de cerca de 70.25\% na latência da aplicação. Uma estratégia combinar
+de 1117ms, um impacto de cerca de 70.25\% na latência da aplicação. Uma estratégia seria combinar
 a estratégia de implementação do armazenamento em memória com o armazenamento em banco de
 dados SQL. Teríamos uma lista com tamanho fixo de dados, que armazenaria as requisições em
-memória, a partir do momento em que ela excedesse sem máximo, iriamos escrever os dados no
-banco de dados uma única vez, e continuariamos sobreescrevendo a lista, ao fazer isso,
+memória, onde a partir do momento em que ela excedesse sem máximo, iriamos escrever os dados no
+banco de dados uma única vez, e continuariamos sobreescrevendo a lista. Com isto,
 iríamos diminuir a latência de escrita, já que seria feita menos vezes e aumentar a
-eficiência pelo armazenamento em memória. Entretanto, esta sugestão não foi feita neste
-trabalho.
+eficiência pelo armazenamento em memória.
 
 \section{Análise do período de tempo de Checkpoint do Interceptador}
 
@@ -143,7 +142,7 @@ p95 de 7.3s para as requisições do período de tempo, onde já existiam mil re
 acumuladas para que ocorresse a reprojeção durante a recuperação e os tínhamos cem clientes
 realizando mil requisições simultâneas para a aplicação durante o período de tempo.
 
-Novamente, tivemos uma piora de latência do serviço, isto se deve principalmente pelo fator
+Novamente, tivemos uma piora de latência do serviço, que se deve principalmente pelo fator
 da nossa aplicação ter que realizar todas as requisições já feitas para a aplicação atingir
 o estado antes da falha na recuperação. Na proposta de \cite{muller2022architecture} a
 arquitetura realiza a poda das requisições, onde, menos requisições teriam que ser refeitas
@@ -200,16 +199,16 @@ demonstra que a implementação com técnicas de \textit{Event Sourcing} degrada
 requisições acumuladas no Interceptador para realizar a recuperação.
 
 \begin{table}[htb]
-\caption[Tempos de identificação de recuperação e de recuperação final de um contêiner alvo.]{Tempos de identificação de recuperação e de recuperação final de um contêiner alvo.}
+\caption[Tempos de detecção de faha e de recuperação final de um contêiner alvo.]{Tempos de identificação de recuperação e de recuperação final de um contêiner alvo.}
 \label{tab:latency-restoring}
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-\textbf{\begin{tabular}[c]{@{}c@{}}Ńúmero de requisições\\ acumuladas\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Tempo de Identificação \\ (microssegundos) \end{tabular}} &
+\textbf{\begin{tabular}[c]{@{}c@{}}Ńúmero de requisições\\ acumuladas\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Tempo de detecção \\ (microssegundos) \end{tabular}} &
 \textbf{\begin{tabular}[c]{@{}c@{}}Tempo de Recuperação \\ (segundos) \end{tabular}} \\ \hline
 1000(A) &  991011 & 0.990702s \\ \hline
 10000(B) & 998153 & 0.975395s     \\ \hline
-20000(C) & 1013021 & 856.670.000s \\ \hline
+20000(C) & 1013021 & 856.67s \\ \hline
 \end{tabular}
 \end{table}
 
