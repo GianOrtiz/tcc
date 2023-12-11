@@ -51,14 +51,14 @@ virtuais que precisam de muitos mecanismos de virtualização, através principa
 do \textit{namespaces} e \textit{cgroups} conseguimos limitar e priorizar recursos,
 isolar processos, redes e arquivos entre diferentes processos que estarão executando
 em contêinres separadados \cite{kubernetes}. Embora contêineres tenham sido criados
-inicialmente para o Linuxm ataulmente já existem solução de conteinerização para
+inicialmente para o Linux atualmente já existem solução de conteinerização para
 outros sistemas \cite{laadan2010linux}.
 
 Para melhorar o fluxo de criação de contêineres algumas ferramentas foram criadas,
-as chamadas \textit{container runtimes} (\textit{runtime} de contêineres), com elas
+as chamadas \textit{container runtimes} (\textit{runtime} de contêineres), através destas
 é possível realizar todo o processo de criação de uma imagem de contêiner, definição
 da execução da imagem (programa a ser executado), inicialização, finalização e
-remoção do contêiner, as \textit{runtimes} utilizam o processo de isolação do sistema
+remoção do contêiner. Estas utilizam o processo de isolação do sistema
 que seria feito manualmente com as chamadas de sistema para \textit{cgroups} e
 \textit{namespaces}.
 
@@ -67,11 +67,11 @@ a primeira a ser criada e com funcionalidades rudimentares quando comparadas às
 cri-o que é uma \textit{runtime} leve otimizada para Kubernetes, o
 containerd que provê simplicidade, dando ao usuário apenas o que é necessário
 para utilização da \textit{runtime} e o docker que é o mais utilizado e construído
-em cima do containerd, provendo mais funcionalidades do que o outro que é mais simples.
-O orquestrador de contêineres Kubernetes utiliza o containerd como \textit{runtime}
-padrão e disponibiliza a CRI, interface de \textit{runtime} de contêineres, para
-definir uma interface que \textit{runtimes} devem seguir para serem utilizadas
-no Kubernetes, cri-o, containerd e docker seguem a implementação da CRI.
+em cima do containerd, provendo mais funcionalidades do que o primeiro. O orquestrador
+de contêineres Kubernetes utiliza o containerd como \textit{runtime} padrão e disponibiliza
+a CRI, interface de \textit{runtime} de contêineres, para definir uma interface que
+\textit{runtimes} devem seguir para serem utilizadas no Kubernetes, cri-o, containerd e
+docker seguem a implementação da CRI.
 
 \subsection{containerd}
 
@@ -83,7 +83,7 @@ de contêineres utilizada como \textit{backend}. Desta forma, o containerd prov�
 uma API para acesso à \textit{runtime} de contêineres runc \cite{containerd}.
 
 O containerd conta com uma interface de linha de comando que permite trabalhar
-de maneira ágil com os contêineres. Além disso, provê uma API, essa API pode ser
+de maneira ágil com os contêineres. Além disso, provê uma API, que pode ser
 utilizada com linguagens de programação, como Go, para estender as funcionalidades
 a partir de chamadas, permitindo o desenvolvedor criar aplicações em cima das
 chamadas à API.
@@ -130,8 +130,8 @@ temos:
     \item Kubernetes: um \textit{framework}, como se descreve em sua documentação,
     que permite a orquestração de contêineres, bem completo, permite todas as
     funcionalidades abordadas no docker-swarm, mas também provê funcionalidades
-    muito interessantes para extensão, é possível utilizar a API do Kubernetes para
-    estender funcionalidades nativas e criar novas funcionalidades, como por exemplo,
+    muito interessantes para extensão. Através das extensões podemos utilizar a API do
+    Kubernetes para estender funcionalidades nativas e criar novas funcionalidades, como por exemplo,
     para \textit{Checkpoint/Restore} de contêineres. Pela alta extensibilidade do
     \textit{framework}, alta adoção do Kubernetes pela indústria
     \cite{kubernetes:usage} e também pela possibilidade de trabalhar com diversas
@@ -159,7 +159,7 @@ Para tornar o Kubernetes mais extensível possível, ele é composto por diversa
 aplicações que juntas executam o que chamamos de um \textit{cluster} Kubernetes.
 Cada uma das aplicações administra uma funcionalidade do \textit{cluester}.
 Um nó do \textit{cluster} do Kubernetes pode ou não possuir o \textit{control plane},
-que permite a administração dos nós e também dos contêineres que executam nela
+que permite a administração dos nós e também dos contêineres que executam no nó
 \cite{kubernetes:components}. Os componentes do Kubernetes estão ilustrados na
 Figura \ref{fig:kubernetes:components}.
 
@@ -175,7 +175,7 @@ prover as funcionalidades do \textit{framework} do Kubernetes:
 
 \begin{itemize}
     \item kube-apiserver: é a API do Kubernetes, onde estão definidos os tipos
-    de recursos que o \textit{cluster} possui, define a forma de acesso aos
+    de recursos que o \textit{cluster} possui, realiza a interface de acesso aos
     dados que ficam armazenados em banco de dados. Permite a criação e administração
     dos recursos através desta API através de acesso de dados CRUD (\textit{Create},
     \textit{Retrieve}, \textit{Update}, \textit{Delete}).
@@ -188,15 +188,15 @@ prover as funcionalidades do \textit{framework} do Kubernetes:
     Para escolher o melhor nó se faz uso de diversas políticas, como a definição dos
     recursos necessários do contêiner, é necessário que o nó possua os recursos e
     que os recursos gerais sejam utilizados da melhor forma no \textit{cluster},
-    ou também se o nó possui alguma peculiaridade, como, por exemplo, uma GPU, o
-    que é chamado de \textit{node affinity}.
+    ou também se o nó possui alguma peculiaridade em anotação, como, por exemplo,
+    uma GPU, o que é chamado de \textit{node affinity}.
     \item kube-controler-manager: todos os recursos da API do Kubernetes possuem
-    um \textit{controler}(controlador) que controla a criação e administração
+    um \textit{controller}(controlador) que controla a criação e administração
     destes recursos. Nesta aplicação, estão definidos a maioria dos controladores
     padrões do Kubernetes. Quando necessitamos estender a API, geralmente escrevemos
-    novos controladores que executam separadamente destes controladores padrões.
+    novos controladores que executam separadamente destes.
     \item cloud-controller-manager: aplicação específica para \textit{clusters}
-    que estejam sendo executados em serviços de nuvem, permite que o serviço defina
+    que estejam sendo executados em serviços de nuvem, permitindo que o serviço defina
     como serão feitos os roteamentos de dados de rede e outras particularidades de
     acesso de rede na nuvem, por exemplo, abertura de portas e exposição das mesmas,
     protocolos de redes, DNS, entre outros.
@@ -207,10 +207,10 @@ executam contêineres do usuário precisam contar com três aplicações, o kube
 o kube-proxy e a \textit{runtime} de contêiner, como visto na Figura
 \ref{fig:kubernetes:components}. O kubelet é responsável por administrar os
 contêineres da máquina e assegurar que o contêiner é executado conforme a
-definição de um Pod, assim, é possível saber quais contêineres não são mais
+definição de um Pod. Desta forma, é possível saber quais contêineres não são mais
 necessários através das definições do estado almejado por cada recurso. O
 kube-proxy implementa regras de rede para o nó que permitem que os contêineres
-que executam nela sejam acessíveis aos outros nós do \textit{cluster}, através
+que este executa sejam acessíveis aos outros nós do \textit{cluster}, através
 de registros DNS internos ao \textit{cluster}. Por fim, a \textit{runtime} de
 contêineres é a responsável por de fato executar os contêineres do nó. O kubelet
 se comunica com a \textit{runtime} de contêineres para que seja possível realizar
@@ -229,12 +229,12 @@ arquivo YAML ou JSON, contendo a imagem que será utilizada, os recursos e
 também os contêineres que serão utilizados \cite{kubernetes:pod}. O próprio
 Kubernetes executa algumas de suas aplicações internas em Pods, como o próprio
 kube-apiserver. Toda aplicação que executa no Kubernetes executa através de um
-Pod, este recurso é o recurso mínimo para que possamos utilizar o Kubernetes.
+Pod, que é o recurso mínimo para que possamos utilizar o Kubernetes.
 
 \subsubsection{Deployment/StatefulSet}
 
-Para administrar Pods no Kubernetes utilizamos o Deployment ou o StatefulSet,
-a principal diferença entre os dois é que o último permite a utilização de
+Para administrar Pods no Kubernetes utilizamos o Deployment ou o StatefulSet.
+A principal diferença entre os dois é que o último permite a utilização de
 volumes persistentes para armazenar dados entre reinicializações dos Pods.
 Eles permitem definir os estado que queremos que nosso Pods permaneçam, este
 estado está relacionado principalmente ao número de réplicas deste Pod e
@@ -243,7 +243,7 @@ ou StatefulSet lida com toda a parte de criar novos Pods e seus contêineres,
 de reiniciá-los, pará-los ou atualizá-los através de um controlador do
 kube-controller-manager \cite{kubernetes:deployment}. Estes recursos permitem
 que o Kubernetes possa administrar as aplicações que ele executa através de
-outros recursos, como o ReplicaSet, que é a definição da quandidade de réplicas
+outros recursos, como o ReplicaSet, que é a definição da quantidade de réplicas
 que deve ser mantida para cada um dos serviços.
 
 \subsubsection{Volumes}
@@ -277,19 +277,19 @@ todos estes possuem um controlador para controlar o estado desejado de
 cada um dos recursos \cite{kubernetes:controllers}.
 
 Também podemos adicionar recursos através de controladores personalizados,
-estes controladores personalizados são criados em qualquer linguagem de
-programação e também se comunicam com o kube-apiserver. Com isso, é
-possível estender, por exemplo, a funcionalidade do StatefulSet Controller,
-a partir de monitoramento dos recursos que ele administra. Com isso, podemos,
-por exemplo, adicionar novas funcionalidades a recursos padrões para
-monitorar Pods e criar funcionalidades como servidores de \textit{reverse proxy} \cite{kubernetes:controllers}.
+estes são criados em qualquer linguagem de programação e também se comunicam
+com o kube-apiserver. Com isso, é possível estender, por exemplo, a
+funcionalidade do StatefulSet Controller, a partir de monitoramento dos
+recursos que ele administra. Com isso, podemos, por exemplo, adicionar novas
+funcionalidades para monitorar Pods e criar funcionalidades como servidores
+de \textit{reverse proxy} \cite{kubernetes:controllers}.
 
 \section{Serviços Stateful e Stateless}
 
 De modo geral, quando executamos uma aplicação ou um serviço em produção,
 temos dois tipos de possibilidade de aplicações. Temos as aplicações que
 não necessitam saber do estado de execução da aplicação, como, por exemplo,
-a instrução que estava sendo executada, em geral, aplicações que precisam
+a instrução que estava sendo executada. Aplicações que precisam
 apenas acessar um banco de dados e servir dados, como uma API HTTP, não
 possuem necessidade de permanecer o estado da memória ou mesmo de saber a
 instrução sendo executada em determinado momento. Chamamos este tipo de
@@ -307,11 +307,11 @@ da aplicação e não teremos a mesma aplicação executando quando ela reinicia
 \cite{vayghan2021kubernetes}.
 
 O estado da aplicação em geral consiste do estado do processo pai e filhos
-executando na aplicação. Este estado contem, por exemplo, como as páginas
+executando na aplicação. Este estado contém, por exemplo, como as páginas
 de memória estão em determinado momento. Desta forma, temos exatamente o
-estado da execução, mas, não temos conhecimento de como ela chegou aquele
-estado. Não seria interessante para a aplicação salvar estes valores em
-persistência, pois, seria necessária muita instrumentação \cite{oh2018stateful}.
+estado da execução, mas, não temos conhecimento de como ela nele. Não seria
+interessante para a aplicação salvar estes valores em persistência, pois,
+seria necessária muita instrumentação \cite{oh2018stateful}.
 
 \subsection{etcd}
 
@@ -322,7 +322,7 @@ líderes, logo, ele é tolerante a falhas e consistente. \cite{etcd}
 Por se tratar de um banco de dados distribuídos, ele é adequado para
 utilização em \textit{clusters}, e, por isso, é utilizado por padrão no
 Kubernetes para armazenar metadados dos seus recursos. Também é comum que
-controladores customizados do Kubernetes utilizem ele para armazenamento
+controladores customizados do Kubernetes utilizem este para armazenamento
 de seus metadados \cite{kubernetes:etcd}.
 
 \section{Checkpointing/Restore}
@@ -338,12 +338,12 @@ que ocorreu o salvamento da imagem \cite{laadan2010linux}.
 
 Esta técnica pode ser utilizada para tolerância a falhas no caso de aplicações
 que quando falham necessitam do estado de recuperação \cite{muller2022architecture}
-\cite{Chen2015/10}, aplicações \textit{Stateful}, a partir disso temos cópias
+\cite{Chen2015/10}, aplicações \textit{Stateful}. Nesta técnia temos cópias
 dos estados anteriores da aplicação e podemos recuperá-la mais rapidamente.
 Outra possibilidade também é aumentar a disponibilidade dos serviços através
 do salvamento do estado e posterior recuperação dele \cite{vayghan2021kubernetes}.
 Embora, a técnica de \textit{Checkpoint/Restore} tenha o objetivo de salvar um
-estado e depois recuperá-lo, ela pode ser utilizado para outras finalidades não
+estado e depois recuperá-lo, ela pode ser utilizada para outras finalidades não
 envolvidas exatamente nessa linha, como migração de aplicações entre nós de um
 \textit{cluster} \cite{Chen2015/10}.
 
@@ -361,8 +361,8 @@ contêineres utilizando o CRIU \cite{criu}.
 Algumas \textit{runtimes} de contêineres possuem o suporte de
 \textit{Checkpoint/Restore} implementado com o auxílio do CRIU, é o caso
 do containerd. Por usar runc para construção do \textit{backend} da
-\textit{runtime}, que possui o CRIU integrado, foi-se criado comandos no
-interface de linha de comando do containerd para realizar o
+\textit{runtime}, que possui o CRIU integrado, comandos na
+interface de linha de comando do containerd foram criados para realizar o
 \textit{Checkpoint/Restore}. Desta forma, utilizando o Kubernetes com
 containerd também é possível realizar \textit{Checkpoint/Restore} dos
 contêineres, não de forma nativa, mas se aproveitando das funcionalidades
@@ -372,13 +372,13 @@ quanto do Kubernetes.
 \section{Event Sourcing}
 
 O padrão de projeto \textit{Event Sourcing} cria eventos sobre ações em um
-sistema e armazena eles em fluxos ordenados \cite{event-sourcing}. Então,
-quando uma ação é feita no sistema temos a emissão de um novo evento para
-um determinado fluxo, estes eventos são ordenados pela versão em que são
-entregues. Uma vantagem deste modelo é a possibilidade de alcançar o estado
-da aplicação em um determinado momento apenas reprojetando os eventos, ou
-seja, ao emitir os mesmos eventos em ordem até um determinado momento no
-tempo, e, por momento se entende a última versão desejada
+sistema e, armazena estes em fluxos ordenados \cite{event-sourcing},
+através de um versionamento da ordem. Então, quando uma ação é feita no sistema
+temos a emissão de um novo evento para um determinado fluxo. Estes são ordenados
+pela versão em que são entregues. Uma vantagem deste modelo é a possibilidade
+de alcançar o estado da aplicação em um determinado momento apenas reprojetando
+os eventos, ou seja, ao emitir os mesmos eventos em ordem até um determinado
+momento no tempo, e, por momento se entende a última versão desejada
 \cite{event-sourcing}.
 
 Este padrão permite uma grande forma de auditoria ao armazenar as ações

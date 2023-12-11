@@ -17,11 +17,11 @@ tolerância a falhas e contêineres.
 
 \section{Checkpoint/Restore para contêineres Stateful}
 
-Em \cite{muller2022architecture}, é proposto, como prova de conceito, uma
+Em \cite{muller2022architecture}, é proposta, como prova de conceito, uma
 arquitetura transparente para realizar o \textit{Checkpoint/Restore} de
 contêineres \textit{Stateful} utilizando Kubernetes. O foco primário é em
-tolerância a falhas com técnicas de \textit{Checkpoint/Restore}, onde se é
-abordado a problemática de se ter uma réplica nova do serviço que seja
+tolerância a falhas com técnicas de \textit{Checkpoint/Restore}, onde é
+abordada a problemática de se ter uma réplica nova do serviço que seja
 consistente com o momento atual da falha, não havendo perda de informações
 de estado da antiga réplica.
 
@@ -40,7 +40,7 @@ mais consistente com o momento da falha do último contêiner que estamos
 reinicializando.
 
 Na arquitetura também temos um operador, que é responsável por manter o
-estado das aplicações, ele troca informações com o interceptador para remover
+estado das aplicações. Este troca informações com o interceptador para remover
 contêineres, reiniciá-los ou avisar que eles falharam. Outro ponto da
 arquitetura é o administrador de estados, que serve para armazenar e categorizar
 as imagens do \textit{checkpoint} com \textit{checksums} e seus metadados no etcd.
@@ -51,7 +51,7 @@ claro outros métodos que poderiam ser utilizados, como monitoramento das
 informações do contêiner, ou mesmo um indicador de saúde provido pelo contêiner.
 A partir do momento de identificação da falha, outro contêiner com a imagem
 mais recente de \textit{checkpoint} é criado para substituir o contêiner
-falhante. Como o interceptador só confirma uma mensagem quando o contêiner
+com falha. Como o interceptador só confirma uma mensagem quando o contêiner
 responde de volta, então, temos certeza de que o interceptador sabe a partir
 de qual requisição enviar para recuperar o estado.
 
@@ -77,30 +77,30 @@ abrangente de outras aplicações.
 
 Já em \cite{vayghan2021kubernetes}, os autores propõem uma extensão das
 funcionalidades do Kubernetes para contêineres \textit{Stateful} para
-prover alta disponibilidade (\textit{High Availability}) à réplicas de um mesmo
+prover alta disponibilidade (\textit{High Availability}) a réplicas de um mesmo
 microsserviço. Isto implica, que será necessário manter a aplicação disponível
 o mais rápido possível depois de ela ter alguma falha.
 
 O trabalho em \cite{vayghan2021kubernetes} aborda uma nova forma de se
 utilizar contêineres \textit{Stateful} sem utilizar o StatefulSet do Kubernetes,
 mas utilizando o Deployment com um Persistent Volume compartilhado entre todos
-os Pods dos quais o Deployment controla. Desta forma, todos os contêineres
+os Pods que o Deployment controla. Desta forma, todos os contêineres
 compartilham o mesmo armazenamento e tem acesso ao mesmo estado em disco.
-Segundo o artigo, nenhum dos dois tipos conseguem suprir necessidades reais de
+Segundo o artigo, nenhum dos dois tipos consegue suprir necessidades reais de
 aplicações de alta disponibilidade, por isso, se faz necessário criar uma
-solução que provenha mais velocidade na reinicialização de Pods falhantes.
+solução que provenha mais velocidade na reinicialização de Pods com falhas.
 
 A solução proposta consiste em ter dois Pods disponíveis provendo o mesmo
 serviço em determinado tempo. Um deles é classificado como o ativo, enquanto
 o outro é classificado como o "em espera". O Pod que serve requisições é o
-ativo, quando este falha, um \textit{controller} criado para isso, State Controller,
-copia o estado do Pod falhante para o Pod reserva e cria um novo Service para ele
-servir as requisições. Quando o Pod ativo é recuperado, se faz o caminho inverso
+ativo, quando este falha, um \textit{controller} é criado, o State Controller, que
+utiliza a cópia do estado do Pod com falhas para o Pod reserva e cria um novo Service
+para ele servir as requisições. Quando o Pod ativo é recuperado, se faz o caminho inverso
 para ele voltar a ser o Pod que recebe as requisições. A replicação de estado no
-Pod reserva é feito através de um redirecionamento das requisições do Pod ativo,
-como o State Controller cria Services separados para os Pods é possível descobrir
-o Pod reserva através do nome do Service ao invés de seu IP no \textit{cluster}
-graças ao componente de kube-proxy do Kubernetes.
+Pod reserva é feito através de um redirecionamento das requisições do Pod ativo. Como o State
+Controller cria Services separados para os Pods, é possível descobrir o Pod reserva
+através do nome do Service ao invés de seu IP no \textit{cluster} graças ao componente
+de kube-proxy do Kubernetes.
 
 Por fim, são apresentados os experimentos e resultados, tendo em mente que a
 alta disponibilidade dos serviços almejada era de 99,999\% anualmente. Os
@@ -143,10 +143,10 @@ Dos experimentos se obteve respostas:
 \begin{enumerate}
     \item Os resultados mostram que é mais rápido para o State Controller
     configurar os estados aos Pods recuperados do que o Kubernetes recuperar
-    os serviços. Com uma pequena diferença na velocidade de recuperação entre
+    os serviços. Uma pequena diferença na velocidade de recuperação entre
     StatefulSets e Deployments, onde o último tem velocidade maior e melhorada
     graças ao State Controller. Apesar do pequeno trabalho a mais que o State
-    Controller gera o tempo de recuperação diminui devido ao Pod reserva.
+    Controller gera, o tempo de recuperação diminui devido ao Pod reserva.
     \item Os resultados mostram que o State Controller gera um atraso no
     escalonamento devido ao tempo que se leva para configurar os estados de
     disponibilidade aos Pods. Como o serviço não consegue realizar as duas
@@ -156,7 +156,7 @@ Dos experimentos se obteve respostas:
     sem falhas, e que demora mais para as reações de escalonamento ocorrerem
     quando se utiliza o State Controller.
     \item Os resultados mostram que quanto mais tarde um Pod falha mais tarde ele
-    será recuperado pelo State Controller, isto ocorre, segundo a autora, pela
+    será recuperado pelo State Controller. Segundo a autora, isso ocorre pela
     utilização de uma fila \textit{FIFO} para tratamento da recuperação, o que
     gera este problema.
 \end{enumerate}
@@ -185,7 +185,7 @@ aplicação que constrói uma imagem compatível com \textit{Open Container Inte
 que é possível ser utilizada no cri-o. Para o desenvolvimento tanto do sistema
 de \textit{Checkpoint} quanto do de \textit{Restore} os autores utilizaram o
 conceito de operador do Kubernetes para monitorar o estado dos recursos do 
-\textit{cluste} e conciliar para salvar o estado das aplicações monitoradas
+\textit{cluster} e conciliar para salvar o estado das aplicações monitoradas
 através de anotações nos manifestos dos recursos e restaurar quando ao monitorar
 se perceber que houve uma falha na aplicação monitorada. Foram integradas outras
 funcionalidades ao trabalho, como a possibilidade de integrar diversos nós do
@@ -208,8 +208,8 @@ Em \cite{oh2018stateful}, os autores desenvolvem uma técnica de
 \textit{Checkpoint/Restore} para migração de \textit{clusters} com contêineres
 StatefulSet. Como prova de conceito é construída uma aplicação em cima de
 Kubernetes e CRIU para realização do \textit{Checkpoint/Restore}. Alguns
-motivos levam contêineres em um orquestrador de contêineres ter que ser
-movido de um nó para outro, como manutenção do nó atual necessitando de uma
+motivos levam contêineres em um orquestrador de contêineres ter serem movidos de
+um nó para outro, como manutenção do nó atual necessitando de uma
 reinicialização, falha do nó atual ou escalonamento e balanceamento de carga
 das aplicações do \textit{cluster}. Logo, se um contêiner possui estado,
 nestes casos é interessante que a migração dele para um novo nó seja feita
@@ -231,19 +231,19 @@ estágios: pré migração, migração e pós-migração. Na pré migração é 
 o processo de migração por qualquer motivo, como escalonamento, depois se elege
 novos nós para receberem os contêineres do nó antigo, por fim, se criam as
 imagens dos contêineres para substituir as antigas. Na migração é realizado
-\textit{checkpoint} do contêiner, gerando uma nova imagem, esta imagem é
+\textit{checkpoint} do contêiner, gerando uma nova imagem, que é
 transmitida para o novo nó através da internet e no novo nó é iniciado um
-novo contêiner a partir desta imagem, isto permite que o processo seja
-resumido com seu estado passado. Por fim, no estágio de pós migração é
+novo contêiner a partir desta imagem, que permite que o processo seja
+recuperado com seu estado passado. Por fim, no estágio de pós migração é
 realizada a alocação de recursos antigos, como balanceadores de carga ou
 registros \textit{DNS} para o novo contêiner.
 
 Segundo os autores, a solução proposta ainda possui alguns problemas. No
 caso de falhas do nó ela não consegue realizar a migração, embora o
-\textit{checkpoint} periódico resolveria esta dor, problemas com a internet
+\textit{checkpoint} periódico resolveria este problema. Problemas com a internet
 para envio da imagem são ignorados no trabalho. Mas, com a proposta se pode obter uma
 transparência a nível de aplicação da migração do contêiner, se tem uma
-migração leve e ágil, já que, não se usa um volume e, não tem o trabalho
+migração leve e ágil, já que não se usa um volume e não há o trabalho
 a mais de comunicação com possíveis APIs externas e leitura/escrita de volumes.
 
 Para testar a solução se utilizou um \textit{cluster} de máquinas com um
@@ -288,7 +288,7 @@ e também um salvamento dos dados em memória através do CRIU, como em
 \cite{muller2022architecture}. Desta forma, se tem o estado total da aplicação,
 suportando multi \textit{clusters} e \textit{clusters} de nó único.
 
-Para realização das migrações proativas foram criados três aplicações
+Para realização das migrações proativas criaram três aplicações
 principais. O \textit{Monitor Framework}, responsável por monitorar as métricas
 do \textit{cluster}, como CPU e memória, também lida com o registro de serviços.
 O \textit{Fault Prediction Framework}, responsável pelo modelo de predição
@@ -298,8 +298,7 @@ a métrica de CPU, e, o processo \textit{online}, que realiza a execução do
 modelo com a predição da falha do nó. Por último, temos a funcionalidade
 nativa de migração de \textit{clusters}, que é uma modificação do Kubernetes,
 componente kubelet, para possibilitar a utilização da predição e da migração
-entre dois \textit{clusters}. Podemos ver esta arquitetura demonstrada na
-Figura \ref{fig:proactive}.
+entre dois \textit{clusters}. Podemos ver esta arquitetura na Figura \ref{fig:proactive}.
 
 \begin{figure}[h]
 \centering
@@ -328,11 +327,11 @@ controlador da migração deve ser capaz de realizar o Checkpoint do Pod, enviar
 para o novo nó, iniciar o Pod no novo nó, eliminar o Pod antigo e reconfigurar
 o Service para o novo Pod. Também alteraram a definição da interface de
 \textit{runtime} de contêiner do Kubernetes para incluir métodos para realizar
-\textit{Checkpoint} e \textit{Restore} com CRIU, desta forma, é possível realizar
+\textit{Checkpoint} e \textit{Restore} com CRIU, que possibilita realizar
 as chamadas diretamente pela API do Kubernetes. Por fim, foi utilizado um servidor
 de arquivos para armazenar as imagens de \textit{Checkpoint} entre os nós de
-migração, desta forma, basta montar o volume nos dois nós e eles estariam
-compartilhando as imagens, também se remove a necessidade de envio
+migração. Assim, basta montar o volume nos dois nós e eles estariam
+compartilhando as imagens, removendo a necessidade de envio
 por internet da imagem entre os nós e diminui as comunicações.
 
 Para realizar a validação da solução se utilizou quatro \textit{clusters} de
@@ -341,7 +340,7 @@ como \textit{Mongo-DB} e \textit{Redis}, bem como aplicações de estado baseado
 execução, como FFMPEG, todas executando através de StatefulSets. Para realizar a
 migração proativa, o estresse de CPU foi simulado utilizando uma ferramenta que
 permite sobrecarregar os nós, \textit{Stress-ng}. Assim, foram verificadas métricas
-para resultados, no caso o erro da média da raiz quadrado e o erro de média absoluta
+para resultados, no caso o erro da média da raiz quadrada e o erro de média absoluta
 para o modelo de predição e o tempo de recuperação do serviço migrado e a latência
 de qualidade de serviço evitada pela migração.
 
@@ -350,19 +349,19 @@ correta através de dois processos é o Bi-LSTM e ele pode ser utilizado para s�
 de tempo de diferentes tipos, como CPU, memória e temperatura. Também se observou
 que nas aplicações com tempo longo de inicialização houve melhoria do tempo de
 recuperação de serviço apenas em redes de alta velocidade, mas, segundo os autores
-não é um problema devido as novas redes de alta disponibilidade e velocidade 5G e
+não é um problema devido às novas redes de alta disponibilidade e velocidade 5G e
 6G. Outros dois fatores a se destacar para serviços de tempo de inicialização alto
-é o que em momentos que o algoritmo de predição demora para prever a falha do nó
-a migração pode não terminar e temos uma violação da qualidade de serviço em latência,
-assim, como no caso de \textit{clusters} muito grandes, com muitos Pods, ocorre
+é o que em momentos que o algoritmo de predição demora para prever a falha do nó, em que
+a migração pode não terminar e temos uma violação da qualidade de serviço em latência.
+Assim, como no caso de \textit{clusters} muito grandes, com muitos Pods, ocorre
 degradação da comunicação com os servidores de arquivos das imagens, já que a rede
-do \textit{cluster} fica sobrecarregada, o interessante para isto não ocorrer é
+do \textit{cluster} fica sobrecarregado. Para que esta degradação não ocorra é necessário
 aumentar os servidores de arquivo e utilizar balanceadores de carga. Agora, para
 as aplicações de estado em execução se observou que o tempo de recuperação foi
 considerado com base em quanto o serviço demorava para completar suas funções, no
 caso do padrão do Kubernetes tínhamos mais tempo gasto em recuperar por exemplo
-todos os passos de uma conversão de vídeo no FFMPEG, já na migração a conversão
-reiniciava do ponto do \textit{Checkpoint}, isto gerou uma melhoria de 20\% a 22\%
+todos os passos de uma conversão de vídeo no FFMPEG. Já na migração a conversão
+reiniciava do ponto do \textit{Checkpoint}, que gerou uma melhoria de 20\% a 22\%
 na qualidade de serviço em latência. Desta forma, se demonstrou que a migração
 proativa com \textit{Checkpoint/Restore} pode melhorar a qualidade de serviço e
 também tempos de recuperação dos serviços.
@@ -372,6 +371,6 @@ Operators são de grande importância para este e indica um caminho a se seguir.
 Também é interessante verificar as medidas feitas para avaliar a eficiência da
 solução em questão de tempo de recuperação e variação da latência do serviço. Já
 o modelo de predição não deve ser abordado em nosso trabalho, já que o foco não
-é realizar a predição, isto poderia ser adicionado em um trabalho futuro.
+é realizar a predição, que poderia ser adicionado em um trabalho futuro.
 
 \end{otherlanguage*}
