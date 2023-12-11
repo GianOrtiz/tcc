@@ -13,7 +13,7 @@
 Neste capítulo, abordamos a conceituação do nosso serviço de
 \textit{Checkpoint/Restore} de contêineres \textit{Stateful} no Kubernetes.
 Apresentamos a arquitetura geral do serviço e como os componentes da arquitetura
-se comunicam entre si. Também é apresentado as duas implementações que foram
+se comunicam entre si. Também apresentamentamos as duas implementações que foram
 abordadas no trabalho, uma utilizando técnicas de \textit{Event Sourcing} e a
 outra utilizando técnicas mais difundidas para \textit{Checkpoint/Restore} através
 da utilização de CRIU para salvamento do estado de uma aplicação. Serão apresentados
@@ -28,15 +28,15 @@ a implantação, seja ela em Kubernetes ou localmente em um sistema, é fortemen
 pelo trabalho em \cite{muller2022architecture}. A arquitetura é possível de implementar
 de diferentes formas, como na utilização de CRIU quanto de técnicas de
 \textit{Event Sourcing}. Esta arquitetura também é adequada para execução em
-\textit{cluster} de máquinas e adequada para microsserviços \citep{vayghan2021kubernetes}
+\textit{cluster} de máquinas e adequada para microsserviços \cite{vayghan2021kubernetes}
 \cite{muller2022architecture} \cite{oh2018stateful}, embora ainda falte um pouco de
-compreensão de como poderemos utilizar ela em sistemas distribuídos geograficamente
+compreensão de como poderemos utilizá-la em sistemas distribuídos geograficamente
 de forma eficiente.
 
 \subsection{Checkpoint/Restore}
 
-O \textit{Checkpoint/Restore} de aplicações \textit{stateful} em contêineres podem ser
-feitas entre duas formas, como abordamos no Capítulo \ref{cap:fundamentacao:teorica}, ou
+O \textit{Checkpoint/Restore} de aplicações \textit{stateful} em contêineres pode ser
+feito entre duas formas, como abordamos no Capítulo \ref{cap:fundamentacao:teorica}, ou
 utilizando técnicas de salvamento do contexto dos processos, com isolação do contexto
 provida para contêineres \cite{muller2022architecture} com CRIU, ou com as técnicas de
 \textit{Event Sourcing}. No nosso serviço a parte de recuperação dos estados será
@@ -49,7 +49,7 @@ de falhas.
 
 Para realizar os salvamentos de estados pelo Interceptador, é interessante que eles sejam
 feitos de forma periódica, capturando o estado da aplicação em determinado ponto da execução.
-Desta forma, é necessário armazenar este estado em algum armazenamento, podemos utilizar. Para
+Desta forma, é necessário armazenar este estado em algum armazenamento. Para
 isso teremos a imagem gerada por \textit{Checkpoint} que deverá ser armazenada em algum lugar
 para ser posteriormente recuperada, em \cite{vayghan2021kubernetes} utiliza-se o conceito de
 volumes para armazenamento dos dados, aqui também iremos utilizar o mesmo conceito, tanto para
@@ -90,10 +90,10 @@ reprojeção total com todas as requisições feitas desde o momento que a aplic
 executar.
 
 Para que novas requisições que chegarem durante o processo de restauração não interfiram na
-ordem do estado com as requisições sendo refeitas. Nosso Interceptador tem dois estados de
+ordem do estado com as requisições sendo refeitas, nosso Interceptador tem dois estados de
 operação um Ativo que está enviando requisições diretamente para a aplicação monitorada, e
 outro de Aguardo que ficará esperando a restauração terminar para começar a enviar as
-requisições, neste estado as requisições não serão respondidas imediatamente aos clientes,
+requisições. Neste estado as requisições não serão respondidas imediatamente aos clientes,
 mas, só após a restauração finalizar, quando o estado do Interceptador retornar para Ativo.
 Em \cite{vayghan2021kubernetes} algo semelhante foi feito sobre estados da aplicação sendo
 recuperada para impedir que requisições cheguem com estado desatualizado da aplicação.
@@ -117,7 +117,7 @@ Banco de dados e Contêiner são e fazem. A arquitetura de maneira geral está a
 
 O Contêiner é a abstração da nossa aplicação com estado, que é o cerne deste trabalho
 prover tolerância a falha a contêineres através de \textit{Checkpoint/Restore}. Este Contêiner
-contem uma imagem executando, onde o endereçamento de memória é importante para o contexto
+contém uma imagem executando, onde o endereçamento de memória é importante para o contexto
 de execução da aplicação \cite{Chen2015/10}. A aplicação neste caso pode ser um banco
 de dados como Redis ou uma aplicação de \textit{streaming} de vídeo como usado em \cite{vayghan2021kubernetes}.
 
@@ -127,19 +127,19 @@ por diversas máquinas em diferentes localidades \cite{vayghan2021kubernetes}, p
 do trabalho em \textit{clusters} de máquinas. Este volume deve permitir escritas das imagens
 e recuperação das imagens através de uma interface de acesso.
 
-O Banco de Dados é abstração de um banco de dados específico, este banco de dados precisa
+O Banco de Dados é abstração de um banco de dados específico, que precisa
 persistir os dados, possibilitar a escrita, leitura e atualização dos dados. Ele também
 deve ser distribuído pelo \textit{cluster} e tolerante a falhas para que todos as instâncias
 dele consigam servir as mesmas informações consistentemente.
 
 O Interceptor é a nossa aplicação do padrão de projeto do Embaixador \cite{ambassador}. Ele
-deve interceptar as requisições a nossa aplicação, enviá-las ao Contêiner, esperar a resposta
+deve interceptar as requisições à aplicação aplicação, enviá-las a esta, esperar a resposta
 deste, salvar a requisição para posterior recuperação das requisições respondidas pelo
 Contêiner e responder para o cliente da requisição. Outro requisito do Interceptor é que ele
 consiga replicar as requisições a um Contêiner a partir de uma informação de tempo, para que
 possamos recuperar um estado do Contêiner apenas repetindo as requisições. O Interceptor também
 é o responsável por realizar o salvamento do estado em uma imagem do Contêiner e enviar ao
-Administrador de Estado os metadados da última requisição tratada, enquanto se faz um salvamento
+Administrador de Estado os metadados da última requisição tratada. Enquanto se faz um salvamento
 também devemos colocar as requisições que chegarem em um \textit{buffer}, a partir da informação
 do estado do Interceptador como Aguardo.
 
@@ -180,9 +180,9 @@ funcionalidades do ReplicaSet para possibilitar que nós possamos iniciar novos 
 da aplicação com imagens recuperadas e identificar quais Pods devemos monitorar com
 o nosso Interceptador.
 
-Para implementação do Admnistrador de Estado iremos utilizar também o conceito de Operator
+Para implementação do Administrador de Estado iremos utilizar também o conceito de Operator
 no Kubernetes. O nosso Administrador de Estado será implantado através de um controlador do
-estado dos Pods, estes Pods sempre que tiverem uma alteração no seu estado como a falha, iremos
+estado dos Pods, que quando houver uma alteração no seu estado, como a falha, iremos
 realizar a recuperação do estado. O administrador irá se comunicar com o Interceptador através
 do endereço IP do Pod do Kubernetes que pode ser obitdo a partir do momento em que o Pod está
 executando e pronto.
@@ -219,16 +219,19 @@ momento para salvamento, seja através de metadados sobre intervalos para coleta
 ele inicia o fluxo. Inicialmente, todas as requisições param de ser encaminhadas à aplicação
 e ficam apenas no \textit{buffer} do Interceptador, este, então, inicia o processo de salvamento
 do estado da aplicação utilizando o CRIU. No momento que a imagem estiver pronta, os metadados
-dela serão enviados ao Administrador de Estado, que contem principalmente a última requisição
+dela serão enviados ao Administrador de Estado, que contém principalmente a última requisição
 servida, a identificação da aplicação e o horário da imagem. O Administrador de Estado internamente
 irá salvar os metadados. Por fim, no Interceptador é retomado o processo de interceptação das
-mensagens, servindo as mensagens no \textit{buffer} e reencaminhando novas que chegarem. Em \cite{muller2022architecture} teríamos um passo entre o 5 e o 6, que seria descartar as requisições no \textit{buffer} anteriores a este \textit{checkpoint}, não faremos esta abordagem, manteremos o \textit{buffer} com todas as requisições, salvando-as ou não em um banco de dados persistente, para
-que possamos implementar nossa solução específica com técnicas de \textit{Event Sourcing} para
-recuperação do estado da aplicação.
+mensagens, servindo as mensagens no \textit{buffer} e reencaminhando novas que chegarem. Em
+\cite{muller2022architecture} teríamos um passo entre o 5 e o 6, que seria descartar as
+requisições no \textit{buffer} anteriores a este \textit{checkpoint}. Não faremos esta abordagem,
+manteremos o \textit{buffer} com todas as requisições, salvando-as ou não em um banco de dados
+persistente, para que possamos implementar nossa solução específica com técnicas de
+\textit{Event Sourcing} para recuperação do estado da aplicação.
 
 As requisições serão mantidas após um \textit{checkpoint}, como mostrado na Figura
 \ref{fig:interceptor-checkpoint}, para que seja possível replicá-las a partir de 
-ualquer imagem de recuperação ou até mesmo da última imagem possível. Através da
+qualquer imagem de recuperação ou até mesmo da última imagem possível. Através da
 reprojeção das requisições como se fossem eventos, poderemos utilizar o padrão de
 projeto de \textit{Event Sourcing} \cite{event-sourcing} para replicar o estado de uma
 aplicação até o momento da falha apenas realizando todas as requisições novamente.
