@@ -244,8 +244,8 @@
   \renewcommand{\figurename}{Figura}
   \renewcommand{\tablename}{Tabela}
   \renewcommand{\agradecimentosname}{Agradecimentos}
-  \renewcommand{\anexoname}{ANNEX}
-  \renewcommand{\anexosname}{Annex}
+  \renewcommand{\anexoname}{ANEXO}
+  \renewcommand{\anexosname}{Anexo}
   \renewcommand{\apendicename}{APPENDIX}
   \renewcommand{\apendicesname}{Appendix}
   \renewcommand{\orientadorname}{Supervisor:}

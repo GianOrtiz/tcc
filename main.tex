@@ -314,16 +314,16 @@ section=TITLE, % Título de seções em caixa alta
 %    \end{apendicesenv}
 
     % Inicia os anexos
-%    \begin{anexosenv}
-%        % Imprime uma página indicando o início dos anexos
-%        \ifforcedinclude\else\partanexos\fi
-%        \setlength\beforechapskip{50pt}
-%        \setlength\midchapskip{20pt}
-%        \setlength\afterchapskip{20pt}
-%
-%        \include{aftertext/anexo_a}
-%        \include{aftertext/anexo_b}
-%    \end{anexosenv}
+   \begin{anexosenv}
+       % Imprime uma página indicando o início dos anexos
+       \ifforcedinclude\else\partanexos\fi
+       \setlength\beforechapskip{50pt}
+       \setlength\midchapskip{20pt}
+       \setlength\afterchapskip{20pt}
+
+       \include{aftertext/anexo_a}
+       \include{aftertext/anexo_b}
+   \end{anexosenv}
 
     % INDICE REMISSIVO
     \ifforcedinclude\else
