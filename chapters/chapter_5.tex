@@ -27,13 +27,9 @@ Este capítulo pretende responder a algumas perguntas a partir da análise dos e
 
 \begin{itemize}
 	\item Existe impacto ao se utilizar o Interceptador para interceptar requisições à
-	aplicação alvo? Este impacto deve ser considerado ao se utilizar o Serviço nas
-	aplicações.
+	aplicação alvo?
 	\item Qual o impacto de tempo para a aplicação ser restaurada com a implementação do
 	\textit{Checkpoint/Restore} com técnicas de \textit{Event Sourcing}?
-	\item Qual o impacto geral na vazão e latência da aplicação quando ela está sendo
-	interceptada pelo Interceptador? Qual a vazão e latência da aplicação quando ela
-	está sendo executada \textit{standalone}? Há um impacto pela adição do Interceptador?
 	\item Qual a latência da aplicação durante a recuperação da aplicação pelas técnicas de
 	\textit{Event Sourcing}?
 \end{itemize}
@@ -63,7 +59,7 @@ da aplicação com o Interceptador utilizando memória para armazenamento das re
 da aplicação com o Interceptador utilizando um banco de dados SQL para armazenamento das
 requisições. Realizamos os mesmos testes de carga utilizando o bombardier para realizar
 requisições com N clientes paralelamente durante dez segundos. A partir da finalização
-das requisições obtivemos o valor de latência para o percentil 95 da distribuição das requisições 
+das requisições obtivemos o valor de latência para o p95 da distribuição das requisições 
 pudemos construir um gráfico de vazão por latência para os três casos, que é mostrado na Figura
 \ref{fig:analysis-interceptor-standalone}, onde tomamos um acréscimo de cinquenta clientes a cada
 novo ponto para a construção das curvas até dez mil clientes. Alguns pontos destacados nas curvas
@@ -82,7 +78,7 @@ quanto uma piora na questão da máxima vazão da aplicação. No caso da aplica
 implementação de armazenamento em memória, linha verde na Figura \ref{fig:analysis-interceptor-standalone},
 temos que o máximo de carga do serviço se dá entre dois mil a dois mil e setecentos clientes
 simultâneos. Há uma piora direta logo nos primeiros cinquenta clientes, onde a latência
-percentil 95 tem seu valor 38.55ms. Isto mostra que o impacto do nosso Interceptador e pelas
+p95 tem seu valor 38.55ms. Isto mostra que o impacto do nosso Interceptador e pelas
 operações que ele faz, como, por exemplo, processamento da requisição obtendo apenas as
 partes necessárias para o armazenamento, acréscimo da versão de ordem da requisição,
 envio da requisição para a aplicação e posterior retorno da resposta para o cliente, geram
@@ -118,7 +114,7 @@ possibilidade de utilização de bancos mais rápidos, como de chave/valor ou de
 Para nível de comparação no impacto do banco de dados na aplicação, instrumentamos o
 código do Interceptador para capturar métricas sobre a latência em escrever a requisição
 no banco de dados. Nas requisições com trezentos clientes simultâneos que obtemos uma
-latência percentil 95 de 1590ms, tivemos uma latência percentil 95 para inserção da requisição no banco
+latência p95 de 1590ms, tivemos uma latência p95 para inserção da requisição no banco
 de 1117ms, um impacto de cerca de 70.25\% na latência da aplicação. Uma estratégia seria combinar
 a estratégia de implementação do armazenamento em memória com o armazenamento em banco de
 dados SQL. Teríamos uma lista com tamanho fixo de dados, que armazenaria as requisições em
@@ -142,7 +138,7 @@ durar mais tempo que o \textit{Checkpoint}.
 Coletamos dados para a latência das requisições que atingem o Interceptador em um período de
 tempo que inclui antes de uma falha na aplicação alvo, durante a recuperação da aplicação
 alvo e posteriormente da recuperação no mesmo teste. Estes testes nos proveram uma latência
-percentil 95 de 7.3s para as requisições do período de tempo, onde já existiam mil requisições
+p95 de 7.3s para as requisições do período de tempo, onde já existiam mil requisições
 acumuladas para que ocorresse a reprojeção durante a recuperação e os tínhamos cem clientes
 realizando mil requisições simultâneas para a aplicação durante o período de tempo.
 
@@ -165,7 +161,7 @@ ocasionada pela interrupção da execução do contêiner pela ferramenta crictl
 a recuperação deve ocorrer, neste momento, passamos a realizar um teste de carga igual para
 todos os casos, cem requisições serão feitas de maneira concorrente entre dez clientes. Todos
 os testes foram realizados em um conjunto de dez tentativas, onde se tomou como valor para análise
-o resultado do percentil 95 entre eles.
+o resultado do p95 entre eles.
 
 \begin{table}[htb]
 \caption[Latência durante recuperação de requisições acumuladas.]{Latência durante recuperação de requisições acumuladas.}
