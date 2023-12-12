@@ -13,7 +13,7 @@
 Neste capítulo, abordamos a conceituação do nosso serviço de
 \textit{Checkpoint/Restore} de contêineres \textit{Stateful} no Kubernetes.
 Apresentamos a arquitetura geral do serviço e como os componentes da arquitetura
-se comunicam entre si. Também apresentamentamos as duas implementações que foram
+se comunicam entre si. Também apresentamos as duas implementações que foram
 abordadas no trabalho, uma utilizando técnicas de \textit{Event Sourcing} e a
 outra utilizando técnicas mais difundidas para \textit{Checkpoint/Restore} através
 da utilização de CRIU para salvamento do estado de uma aplicação. Serão apresentados
@@ -68,12 +68,12 @@ utilizará o mesmo conceito para armazenar metadados das imagens.
 Durante um salvamento do estado da aplicação a aplicação permanece indisponível para
 servir requisições e comandos do usuário, pois, as técnicas de salvamento de estado
 de contêineres com CRIU congelam o processo da aplicação para salvar o estado
-\cite{vayghan2021kubernetes}. Já no \textit{Event Sourcing} não possuimos este problema.
+\cite{vayghan2021kubernetes}. Já no \textit{Event Sourcing} não possuímos este problema.
 Entretanto, no segundo caso precisamos saber a ordem em que as requisições chegam para
 podermos reprojetar o estado da aplicação a partir da reemissão das requisições à aplicação
 monitorada. Ainda no caso do CRIU, ainda precisamos saber quais as requisições que chegaram
 a partir de um salvamento de estado, já que todas requisições posteriores àquele salvamento
-não estaram no estado salvo, precisaremos replicá-las para o serviço monitorado também. De
+não estarão no estado salvo, precisaremos replicá-las para o serviço monitorado também. De
 modo geral, o que temos de diferença é que no caso do CRIU reprojetamos apenas as requisições
 a partir do último ponto de salvamento, já no caso do \textit{Event Sourcing} replicamos
 as requisições desde o começo da existência da aplicação.
@@ -104,7 +104,7 @@ As subseções acima trouxeram um pouco dos problemas que temos que enfrentar e 
 resolvê-los com algum componente do sistema. Nesta subseção, iremos
 abordar um pouco de como os componentes se comunicam entre a arquitetura e delimitar as
 funcionalidades de cada um dos componentes sem abordar nenhum tipo de implementação
-específica. Aqui, elicidamos o que o Administrador de Estado, o Interceptador, o Volume, o
+específica. Aqui, elucidamos o que o Administrador de Estado, o Interceptador, o Volume, o
 Banco de dados e Contêiner são e fazem. A arquitetura de maneira geral está apresentada na Figura
 \ref{fig:abstract-architecture}, e a chamamos de representação geral abstrata da arquitetura.
 
@@ -192,7 +192,7 @@ executando e pronto.
 Nosso Interceptador será implantado através de um \textit{sidecar container} na aplicação
 monitorada, teremos um Operador do Kubernetes que tentará conciliar o estado dos Deployments,
 sempre que houver um Deployment com uma anotação do tipo \texttt{crsc.io/checkpoint-restore}
-com valor de \textit{true}, iremos criar um novo contêiner no deployment que servirá como 
+com valor de \textit{true}, iremos criar um novo contêiner no Deployment que servirá como 
 Interceptador e irá interceptar o tráfego ao Pod. Assim, como em \cite{muller2022architecture},
 nosso Interceptador implementado como um \textit{sidecar} permite economia de tráfego, já que
 ambos os contêineres operando no Pod tem a mesma interface de rede.

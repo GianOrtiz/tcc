@@ -135,7 +135,7 @@ Os experimentos pretendiam responder às cinco perguntas:
     gerenciados?
     \item Qual é a sobrecarga gerada pelo State Controller no escalonamento?
     \item Qual é o impacto de falhas simultâneas nos Pods ativos no tempo de
-    indisponibilidade de cada Pod falhante?
+    indisponibilidade de cada Pod com falhas?
 \end{enumerate}
 
 Dos experimentos se obteve respostas:
@@ -173,7 +173,7 @@ da adequação da solução.
 Já em \cite{schmidttransparent}, temos uma proposta de uma ferramenta para
 tolerância a falhas em contêineres \textit{Stateful} no Kubernetes utilizando
 \textit{Checkpoint/Restore}. Os autores utilizam a técnica de \textit{Checkpoint}
-já disponível no Kubernetes em versão alpha para gerar um ponto de salvamento
+já disponível no Kubernetes em versão alfa para gerar um ponto de salvamento
 do estado do sistema. O Kubernetes utiliza a \textit{runtime} de contêineres
 cri-o\cite{cri-o}, que internamente, utiliza o CRIU\cite{criu} para realizar
 o \textit{Checkpoint}. Como os autores discutem, este ponto de salvamento

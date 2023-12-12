@@ -21,7 +21,7 @@
 	
 	O Serviço desenvolvido ainda possui algumas falhas, além de não conseguir
 	implementar	o salvamento e recuperação com CRIU. Este só funciona com aplicações
-	de estado que possuam uma réplica, mais réplicas geram estados incosistentes
+	de estado que possuam uma réplica, mais réplicas geram estados inconsistentes
 	entre as aplicações. Também não houve muito foco na segurança do
 	Serviço, já que temos acesso às chaves de comunicação com a API do Kubernetes
 	em nosso Interceptador, qualquer um que tenha acesso ao Interceptador, por
@@ -51,7 +51,7 @@
 
 \section{Trabalhos futuros}
 
-Como trabalhos futuros podemos listar alguns pontos que faltaram fechar netes trabalho.
+Como trabalhos futuros podemos listar alguns pontos que faltaram fechar nestes trabalho.
 O primeiro é a implementação com CRIU para o \textit{Checkpoint/Restore}. Este trabalho
 mostrou que é possível utilizar a arquitetura proposta para realizar o
 \textit{Checkpoint/Restore}, mas não houve a finalização da implementação com CRIU,
@@ -63,7 +63,7 @@ CRIU com base na análise da performance das duas implementações, seguindo os 
 de \cite{muller2022architecture}, onde nossa arquitetura foi inspirada. 
 
 Neste trabalho em momento algum utilizamos técnica preditivas para detectar o momento
-que a aplicação poderia falhar, então, em determinados momentos poderiamos ter uma
+que a aplicação poderia falhar, então, em determinados momentos poderíamos ter uma
 requisição interceptada pelo Interceptador e que não tenha sido enviada à aplicação
 com falhas. Em \cite{tran2022proactive} houve uma implementação de predição, que poderia
 ser adicionada a nossa implementação para prover um Serviço mais ativo na recuperação,
@@ -79,7 +79,7 @@ distribuição dos dados armazenados persistentemente.
 
 O trabalho também não cobre aplicações que tenham mais de uma réplica com estado da
 mesma aplicação. Neste Serviço cobrimos apenas aplicações com uma réplica.
-Aplicações com diversas réplicas necessitam de coordenaçao entre os interceptadores
+Aplicações com diversas réplicas necessitam de coordenação entre os interceptadores
 para acordar em uma ordem das requisições com algoritmos de consenso para resolver
 estes problemas. Aliado ao problema de aplicações geograficamente distribuídas
 também temos o consenso entre estas os diferentes nós geograficamente distribuídos.
@@ -88,6 +88,6 @@ Por fim, é possível aproveitar ainda mais de conceitos de \textit{Event Sourci
 A aplicação alvo se instrumentada também com este padrão de projeto pode prover uma
 forma de obtermos o estado do sistema dela e salvarmos temporariamente no nosso
 Serviço. Esta cópia pode ser o estado de cada objeto armazenado no sistema, no caso
-de um banco de dados chave/valor, e a partir da finalização de uma requisição poderiamos
+de um banco de dados chave/valor, e a partir da finalização de uma requisição poderíamos
 salvar esta cópia no Administrador de Estados e excluir requisições anteriores a ela,
 reprojetando apenas as requisições a partir desta cópia.

@@ -50,7 +50,7 @@ leve do sistema \cite{Chen2015/10} \cite{kubernetes}. Diferentemente de máquina
 virtuais que precisam de muitos mecanismos de virtualização, através principalmente
 do \textit{namespaces} e \textit{cgroups} conseguimos limitar e priorizar recursos,
 isolar processos, redes e arquivos entre diferentes processos que estarão executando
-em contêinres separadados \cite{kubernetes}. Embora contêineres tenham sido criados
+em contêineres separados \cite{kubernetes}. Embora contêineres tenham sido criados
 inicialmente para o Linux atualmente já existem solução de conteinerização para
 outros sistemas \cite{laadan2010linux}.
 
@@ -339,7 +339,7 @@ que ocorreu o salvamento da imagem \cite{laadan2010linux}.
 
 Esta técnica pode ser utilizada para tolerância a falhas no caso de aplicações
 que quando falham necessitam do estado de recuperação \cite{muller2022architecture}
-\cite{Chen2015/10}, aplicações \textit{Stateful}. Nesta técnia temos cópias
+\cite{Chen2015/10}, aplicações \textit{Stateful}. Nesta técnica temos cópias
 dos estados anteriores da aplicação e podemos recuperá-la mais rapidamente.
 Outra possibilidade também é aumentar a disponibilidade dos serviços através
 do salvamento do estado e posterior recuperação dele \cite{vayghan2021kubernetes}.
@@ -355,7 +355,7 @@ userspace, o acrônimo da aplicação se dá justamente por isso,
 \textit{Checkpoint/Restore in Userspace}. Ele trabalha com o conceito de
 congelar a execução de um processo, salvar seu estado de execução no disco,
 que depois pode ser utilizado para recuperar a aplicação exatamente no
-momento em que ela parou. Como contêineres são isoluções em cima das
+momento em que ela parou. Como contêineres são isolações em cima das
 ferramentas do Linux, é possível realizar o salvamento de estado de
 contêineres utilizando o CRIU \cite{criu}.
 
@@ -383,7 +383,7 @@ momento no tempo, e, por momento se entende a última versão desejada
 \cite{event-sourcing}.
 
 Este padrão permite uma grande forma de auditoria ao armazenar as ações
-feitas pelo sistema e permite encontrar incosistências com grande facilidade
+feitas pelo sistema e permite encontrar inconsistências com grande facilidade
 ao reprojetar eventos até o ponto de uma falha. Também é possível adicionar
 um \textit{snapshotter} que captura o estado do sistema em determinado
 momento, e, não será necessário reprojetar todos os eventos desde de o início

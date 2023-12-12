@@ -54,7 +54,7 @@ carga mais real. Para coleta de outras métricas utilizamos horário de início 
 uma das modificações. O Serviço e a aplicação executam na mesma máquina o horário é
 igual para todos e não é necessário sincronização de relógios entre máquinas.
 
-\section{Análise da inteterferência do Interceptador na aplicação}
+\section{Análise da interferência do Interceptador na aplicação}
 
 Para fins de entender o quanto o Interceptador interfere no serviço que ele monitora,
 instrumentamos a aplicação e utilizamos um teste de carga para verificar a performance
@@ -63,14 +63,14 @@ da aplicação com o Interceptador utilizando memória para armazenamento das re
 da aplicação com o Interceptador utilizando um banco de dados SQL para armazenamento das
 requisições. Realizamos os mesmos testes de carga utilizando o bombardier para realizar
 requisições com N clientes paralelamente durante dez segundos. A partir da finalização
-das requisições obtivemos o valor de latência para o p95 da distribuição das requisições 
-pudemos construir um gŕafico de vazão por latência para os três casos, que é mostrado na Figura
+das requisições obtivemos o valor de latência para o percentil 95 da distribuição das requisições 
+pudemos construir um gráfico de vazão por latência para os três casos, que é mostrado na Figura
 \ref{fig:analysis-interceptor-standalone}, onde tomamos um acréscimo de cinquenta clientes a cada
 novo ponto para a construção das curvas até dez mil clientes. Alguns pontos destacados nas curvas
 facilitam a comparação entre elas, mas, também são destacados pontos importantes em momentos
 diferentes da curva, pois, nem todos os testes puderam ser finalizados com cada implementação.
 
-O gŕafico da Figura \ref{fig:analysis-interceptor-standalone} nos provê informações que já
+O gráfico da Figura \ref{fig:analysis-interceptor-standalone} nos provê informações que já
 esperávamos, mas serão confirmadas por ele. Na aplicação \textit{standalone}, linha em vermelho,
 podemos ver que demora muito para a aplicação atingir seu máximo de sobrecarga, somente entre
 seis mil e dez mil clientes acabamos tendo uma performance que só piora a partir do aumento
@@ -82,7 +82,7 @@ quanto uma piora na questão da máxima vazão da aplicação. No caso da aplica
 implementação de armazenamento em memória, linha verde na Figura \ref{fig:analysis-interceptor-standalone},
 temos que o máximo de carga do serviço se dá entre dois mil a dois mil e setecentos clientes
 simultâneos. Há uma piora direta logo nos primeiros cinquenta clientes, onde a latência
-p95 tem seu valor 38.55ms. Isto mostra que o impacto do nosso Interceptador e pelas
+percentil 95 tem seu valor 38.55ms. Isto mostra que o impacto do nosso Interceptador e pelas
 operações que ele faz, como, por exemplo, processamento da requisição obtendo apenas as
 partes necessárias para o armazenamento, acréscimo da versão de ordem da requisição,
 envio da requisição para a aplicação e posterior retorno da resposta para o cliente, geram
@@ -118,12 +118,12 @@ possibilidade de utilização de bancos mais rápidos, como de chave/valor ou de
 Para nível de comparação no impacto do banco de dados na aplicação, instrumentamos o
 código do Interceptador para capturar métricas sobre a latência em escrever a requisição
 no banco de dados. Nas requisições com trezentos clientes simultâneos que obtemos uma
-latência p95 de 1590ms, tivemos uma latência p95 para inserção da requisição no banco
+latência percentil 95 de 1590ms, tivemos uma latência percentil 95 para inserção da requisição no banco
 de 1117ms, um impacto de cerca de 70.25\% na latência da aplicação. Uma estratégia seria combinar
 a estratégia de implementação do armazenamento em memória com o armazenamento em banco de
 dados SQL. Teríamos uma lista com tamanho fixo de dados, que armazenaria as requisições em
 memória, onde a partir do momento em que ela excedesse sem máximo, iriamos escrever os dados no
-banco de dados uma única vez, e continuariamos sobreescrevendo a lista. Com isto,
+banco de dados uma única vez, e continuaríamos sobrescrevendo a lista. Com isto,
 iríamos diminuir a latência de escrita, já que seria feita menos vezes e aumentar a
 eficiência pelo armazenamento em memória.
 
@@ -142,7 +142,7 @@ durar mais tempo que o \textit{Checkpoint}.
 Coletamos dados para a latência das requisições que atingem o Interceptador em um período de
 tempo que inclui antes de uma falha na aplicação alvo, durante a recuperação da aplicação
 alvo e posteriormente da recuperação no mesmo teste. Estes testes nos proveram uma latência
-p95 de 7.3s para as requisições do período de tempo, onde já existiam mil requisições
+percentil 95 de 7.3s para as requisições do período de tempo, onde já existiam mil requisições
 acumuladas para que ocorresse a reprojeção durante a recuperação e os tínhamos cem clientes
 realizando mil requisições simultâneas para a aplicação durante o período de tempo.
 
@@ -161,11 +161,11 @@ de carga para levar a aplicação até um estado, com mil requisições(caso A),
 requisições(caso B) e vinte mil requisições(caso C), com mais requisições acumuladas o serviço
 degrada a ponto de não possibilitar testes com as configurações de \textit{cluster} que utilizamos.
 Depois repetimos o mesmo teste com cada uma delas, ao alcançar o estado a aplicação terá uma falha
-ocasionada pela interrupção da execução do container pela ferramenta crictl. Após a falha,
+ocasionada pela interrupção da execução do contêiner pela ferramenta crictl. Após a falha,
 a recuperação deve ocorrer, neste momento, passamos a realizar um teste de carga igual para
 todos os casos, cem requisições serão feitas de maneira concorrente entre dez clientes. Todos
 os testes foram realizados em um conjunto de dez tentativas, onde se tomou como valor para análise
-o resultado do p95 entre eles.
+o resultado do percentil 95 entre eles.
 
 \begin{table}[htb]
 \caption[Latência durante recuperação de requisições acumuladas.]{Latência durante recuperação de requisições acumuladas.}
@@ -173,7 +173,7 @@ o resultado do p95 entre eles.
 \centering
 \begin{tabular}{|c|c|}
 \hline
-\textbf{\begin{tabular}[c]{@{}c@{}}Ńúmero de requisições\\ acumuladas\end{tabular}} & \textbf{Latência} \\ \hline
+\textbf{\begin{tabular}[c]{@{}c@{}}Número de requisições\\ acumuladas\end{tabular}} & \textbf{Latência} \\ \hline
 1000(A)                                                                            & 74.69ms             \\ \hline
 10000(B)                                                                            & 122.76ms            \\ \hline
 20000(C)                                                                               & 10010ms             \\ \hline
@@ -194,7 +194,7 @@ pilha foi feita através da implementação da recuperação com CRIU.
 
 Agora, pretendemos também investigar o tempo que levamos entre a detecção, a recuperação e
 atingir o estado de pronto em cada caso, como em \cite{vayghan2021kubernetes}, adicionamos
-métricas ao controlador de Pods, para definir a detecção, e no nosso script identificamos o
+métricas ao controlador de Pods, para definir a detecção, e no nosso \textit{script} identificamos o
 início da falha, a recuperação é definida nos momentos em que se altera o estado do Interceptador
 e o estado de Pronto também é instrumentado pelo controlador de Pods. Na Tabela
 \ref{tab:latency-restoring} temos os valores para o início da recuperação após uma falha e o tempo
@@ -206,12 +206,12 @@ demonstra que a implementação com técnicas de \textit{Event Sourcing} degrada
 requisições acumuladas no Interceptador para realizar a recuperação.
 
 \begin{table}[htb]
-\caption[Tempos de detecção de faha e de recuperação final de um contêiner alvo.]{Tempos de identificação de recuperação e de recuperação final de um contêiner alvo.}
+\caption[Tempos de detecção de falha e de recuperação final de um contêiner alvo.]{Tempos de identificação de recuperação e de recuperação final de um contêiner alvo.}
 \label{tab:latency-restoring}
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-\textbf{\begin{tabular}[c]{@{}c@{}}Ńúmero de requisições\\ acumuladas\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Tempo de detecção \\ (segundos) \end{tabular}} &
+\textbf{\begin{tabular}[c]{@{}c@{}}Número de requisições\\ acumuladas\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Tempo de detecção \\ (segundos) \end{tabular}} &
 \textbf{\begin{tabular}[c]{@{}c@{}}Tempo de Recuperação \\ (segundos) \end{tabular}} \\ \hline
 1000(A) &  0.991011s & 0.990702s \\ \hline
 10000(B) & 0.998153s & 0.975395s     \\ \hline

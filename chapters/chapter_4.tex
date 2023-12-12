@@ -41,7 +41,7 @@ fazer funcionar o CRIU juntamente com o Kubernetes nas máquinas. Então, optamo
 trocar para outra solução mais comercial, o Google Cloud. Nesta plataforma obtemos
 uma máquina virtual permanente com as configurações sempre inicializadas,
 desta forma, não era necessário refazer a configuração
-da máquina todas as vezes que reinicializassemos \textit{cluster}. De modo a economizar
+da máquina todas as vezes que reinicializássemos \textit{cluster}. De modo a economizar
 nos custos dos recursos de nossos testes, eles foram feitos sob uma implantação em
 \textit{cluster} Kubernetes de máquinas com 2vCPU e 4GB de memória, que é suficiente
 para executar um \textit{cluster} de nó único com Kubernetes.
@@ -68,7 +68,7 @@ o controlador se comunica com o Interceptador e depois cria uma nova imagem a pa
 resultado do salvamento de estado do interceptador. Iremos cobrir com mais ênfase cada um
 deles nas seções posteriores. Para construir todos este Operador, utilizamos o \textit{framework}
 operator-sdk, que permite realizar a criação de recursos de Kubernetes e dos controladores
-de maneira ágil e simples, abstraindo as intereções com o kube-apiserver e criação dos
+de maneira ágil e simples, abstraindo as interações com o kube-apiserver e criação dos
 Custom Resource Definition, que foram necessários para o novo recurso Checkpoint.
 
 Ainda no contexto do \textit{Checkpoint}, como comentamos no capítulo de trabalhos
@@ -81,7 +81,7 @@ essa imagem a partir de todos os passos que fizeram no trabalho em
 apresenta uma facilidade maior, na implementação de \cite{schmidttransparent} temos
 o problema de dar manutenção na geração da imagem sempre que uma mudança na interface
 ocorrer. Por isso, optamos por utilizar uma biblioteca e aplicação que já fizesse esta
-parte a abstraisse o trabalho para nós, a biblioteca que encontramos, que também
+parte a abstraísse o trabalho para nós, a biblioteca que encontramos, que também
 funciona como uma aplicação de linha de comando, é o buildah\cite{buildah}. O buildah é
 uma ferramenta especializada para facilitar a criação de imagens de contêineres no formato
 do OCI.
@@ -120,7 +120,7 @@ de instalação, instalamos o pacote do CRIU. No Código \ref{listing:setup-scri
 instalamos o \textit{backend} que o cri-o utiliza para contêineres, o runc, uma versão
 específica deve ser instalada para que funcione o cri-o no Kubernetes.
 
-Após instalado cri-o e CRIU, alteramos as configurações de ambos para que pudessemos
+Após instalado cri-o e CRIU, alteramos as configurações de ambos para que pudéssemos
 realizar o \textit{Checkpoint}. Primeiro, no Código \ref{listing:crio-conf}, alteramos
 o comportamento da \textit{runtime} adicionando a opção que ativa o suporte para o CRIU
 no cri-o e uma opção que remove a infraestrutura quando um contêiner não possui uma id de
@@ -138,7 +138,7 @@ do CRIU. No Código \ref{listing:runc-conf}, editamos o arquivo /etc/criu/runc.c
 incluir configurações para fechar as conexões TCP no caso de uma restauração iniciada.
 De modo que o cliente que iniciou a conexão TCP deverá refazê-la, para ignorar conexões
 TCP já feitas no momento do \textit{Checkpoint}, onde o cliente também deverá refazer as
-requisições. Também desativamos a adiministração e cgroups feita pelo CRIU para utilizar o padrão,
+requisições. Também desativamos a administração e cgroups feita pelo CRIU para utilizar o padrão,
 para que seja possível executar o \textit{runc} no mesmo cgroup que cri-o e kubelet.
 
 \begin{lstlisting}[language=plaintext,caption={Configuração a ser incluída no arquivo de configurações do runc para o CRIU.},label={listing:runc-conf}]
@@ -196,7 +196,7 @@ ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELE
 \end{lstlisting}
 
 Por fim, iniciamos o \textit{cluster} Kubernetes através dos comando no Código
-\ref{listing:kubernetes-conf}, desativamos o swap da máquina para não criar conflitos que podem
+\ref{listing:kubernetes-conf}, desativamos o \textit{swap} da máquina para não criar conflitos que podem
 ocorrer no kubelet. Outra seção do Código \ref{listing:kubernetes-conf} é a configuração do
 KUBECONFIG, que é a configuração que o kubectl utiliza para se comunicar com a API do Kubernetes.
 Ao final do código nós adicionamos um controlador de rede para os Pods do nosso sistema, qualquer
@@ -259,7 +259,7 @@ chama a API do Kubernetes para que o kubelet comunique com o cri-o para realizar
 CRIU. De modo a realizar a comunicação com o kube-apiserver precisamos estar autenticados
 com o Kubernetes. Deste modo, criamos um Secret no Kubernetes, uma configuração de segredo
 disponível na API do Kubernetes, com o certificado e chave de assinatura para comunicação
-com o kube-apiserver. Estes arquivos ficam localizados no cluster em
+com o kube-apiserver. Estes arquivos ficam localizados no \textit{cluster} em
 \texttt{/etc/kubernetes/pki/apiserver-kubelet-client.key} e em
 \texttt{/etc/kubernetes/pki/apiserver-kubelet-client.crt}. Adicionamos estes dois arquivos em um
 Secret como no Código \ref{listing:kubelet-secret}. Então, podemos chamarmos a API
@@ -372,7 +372,7 @@ elas sejam tratadas.
 \subsubsection{Controlador de Pod}
 
 Para implementar o nosso Administrador de Estado, implementamos parte dele no controlador
-de Pod. O controlador tem uma adiministração mais passiva, através do ciclo de
+de Pod. O controlador tem uma administração mais passiva, através do ciclo de
 reconciliação. Quando um Pod apresenta um problema, como por exemplo, um dos contêineres
 falhar, o controlador filtra os Pods que possuem a anotação
 \texttt{crsc.io/checkpoint-restore}, adicionando a uma fila de restauração.
@@ -440,10 +440,10 @@ recuperar a aplicação ao último estado de forma mais rápida e eficiente como
 
 \section{Checkpoint/Restore com técnicas de Event Sourcing}
 
-Na nossa implementação a partir de técnicas de Event Sourcing tinhamos o objetivo de
+Na nossa implementação a partir de técnicas de Event Sourcing tínhamos o objetivo de
 prover uma forma de agilizar a restauração da aplicação sem o problema do tempo que leva
 para realizar o \textit{Checkpoint} da imagem. Já esperávamos que a performance para
-aplicações com muitas requisições fosse pior, pois, necessitariamos reenviar todas as
+aplicações com muitas requisições fosse pior, pois, necessitaríamos reenviar todas as
 requisições desde o início do estado de Pronto da aplicação. Mas, a partir dela
 poderíamos unir com a técnica de \textit{Checkpoint} com CRIU para realizar ou uma ou
 outra dependendo do estado atual do sistema, eliminando o tempo gasto em um
@@ -478,7 +478,7 @@ restauração caso ele seja monitorado através das anotações. Posteriormente 
 o Pod atinge o estado de Pronto, recebemos mais uma atualização. Caso o Pod esteja na
 fila de recuperação o Interceptador será colocado no estado Aguardo e será solicitada, então, a
 reprojeção das requisições. Após o fim da reprojeção das requisições, que pode demorar,
-já que devemos fazer todas desde o ínicio do funcionamento da aplicação alvo, alteramos
+já que devemos fazer todas desde o início do funcionamento da aplicação alvo, alteramos
 o estado do Interceptador para Pronto novamente. Novamente, de forma transparente
 recuperamos o contêiner da aplicação alvo para um estado consistente.
 
@@ -490,7 +490,7 @@ recuperamos o contêiner da aplicação alvo para um estado consistente.
 \caption*{Fonte: Elaborado pelo autor (2023).}
 \end{figure}
 
-Desta forma, teriamos uma implementação que supostamente perderia performance dado
+Desta forma, teríamos uma implementação que supostamente perderia performance dado
 o número das requisições. Quanto mais requisições o sistema recebe, mais demorado seria
 a reprojeção de todas as requisições, iremos validar este ponto na próxima Seção.
 Entretanto, vale notar que esta é uma implementação não tão abordada em outros trabalhos,
@@ -498,7 +498,7 @@ exceto em \cite{muller2022architecture} que utiliza o conceito até certo ponto 
 replicar as requisições a partir do último ponto de salvamento anterior à recuperação
 da aplicação, o que diminui a latência em se recuperar a aplicação.
 
-Como inicialmente pretendiamos adicionar as duas implementações, uma com CRIU e outra
+Como inicialmente pretendíamos adicionar as duas implementações, uma com CRIU e outra
 com \textit{Event Sourcing}, pretendíamos aproveitar os pontos positivos de cada uma.
 Entretanto, apenas a versão da implementação com técnicas de \textit{Event Sourcing}
 foi finalizada e, pretendemos, na próxima Seção, investigar se essa implementação
