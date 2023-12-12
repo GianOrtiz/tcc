@@ -109,9 +109,10 @@ possibilidade de utilização de bancos mais rápidos, como de chave/valor ou de
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.46]{images/vazaoxlatencia.png}
 \caption{Gráfico de sobreposição de vazão X latência da aplicação alvo de forma \textit{standalone}, da aplicação alvo com o Interceptador com armazenamento em memória e da aplicação alvo com o Interceptador com armazenamento em banco de dados SQL.}
+\includegraphics[scale=0.46]{images/vazaoxlatencia.png}
 \label{fig:analysis-interceptor-standalone}
+\caption*{Fonte: Elaborado pelo autor (2023).}
 \end{figure}
 
 Para nível de comparação no impacto do banco de dados na aplicação, instrumentamos o
@@ -177,6 +178,7 @@ o resultado do p95 entre eles.
 10000(B)                                                                            & 122.76ms            \\ \hline
 20000(C)                                                                               & 10010ms             \\ \hline
 \end{tabular}
+\caption*{Fonte: Elaborado pelo autor (2023).}
 \end{table}
 
 Os resultados do teste estão na Tabela \ref{tab:event-sourcing-latency}. Verificamos, que,
@@ -215,6 +217,7 @@ requisições acumuladas no Interceptador para realizar a recuperação.
 10000(B) & 0.998153s & 0.975395s     \\ \hline
 20000(C) & 1.013021s & 856.67s \\ \hline
 \end{tabular}
+\caption*{Fonte: Elaborado pelo autor (2023).}
 \end{table}
 
 Na tabela \ref{tab:latency-restoring} percebemos que nosso limite da restauração quanto ao

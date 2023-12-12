@@ -247,9 +247,10 @@ representa o fluxo de interceptação quando o estado do Interceptador é Aguard
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.64]{images/wait-state.png}
 \caption{Diagrama de sequência para tratamento de requisições durante estado de Aguardo do Interceptador.}
+\includegraphics[scale=0.64]{images/wait-state.png}
 \label{fig:diagram-wait-state-interceptor}
+\caption*{Fonte: Elaborado pelo autor (2023).}
 \end{figure}
 
 Para realizar um \textit{Checkpoint}, expomos uma rota HTTP de \texttt{/checkpoint}, que
@@ -317,9 +318,10 @@ define o funcionamento do controlador.
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.8]{images/deployment-controller.png}
 \caption{Diagrama de fluxo para a injeção das configurações do Interceptador na aplicação alvo através de um Controlador de Deployments para o Operador.}
+\includegraphics[scale=0.8]{images/deployment-controller.png}
 \label{fig:deployment-controller-diagram}
+\caption*{Fonte: Elaborado pelo autor (2023).}
 \end{figure}
 
 A partir da alteração do estado do \textit{cluster} pela criação de um novo Deployment
@@ -391,9 +393,10 @@ com o estado mais atual, fornecendo uma recuperação transparente ao usuário.
 
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=0.64]{images/restore-pod-criu.png}
 \caption{Diagrama de fluxo para a recuperação da aplicação alvo através de um Controlador de Pods para o Operador com a implementação com CRIU.}
+\includegraphics[scale=0.64]{images/restore-pod-criu.png}
 \label{fig:restore-pod}
+\caption{Fonte: Elaborado pelo autor (2023).}
 \end{figure}
 
 \subsubsection{Controlador de Checkpoint}
@@ -481,9 +484,10 @@ recuperamos o contêiner da aplicação alvo para um estado consistente.
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.64]{images/restore-pod.png}
 \caption{Diagrama de fluxo para a recuperação da aplicação alvo através de um Controlador de Pods para o Operador na implementação com técnicas de \textit{Event Sourcing}.}
+\includegraphics[scale=0.64]{images/restore-pod.png}
 \label{fig:pod-controller-event-sourcing}
+\caption*{Fonte: Elaborado pelo autor (2023).}
 \end{figure}
 
 Desta forma, teriamos uma implementação que supostamente perderia performance dado

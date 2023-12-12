@@ -110,9 +110,10 @@ Banco de dados e Contêiner são e fazem. A arquitetura de maneira geral está a
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.8]{images/abstract-architecture.png}
 \caption{Representação da arquitetura abstrata da solução representada através de seus componentes.}
+\includegraphics[scale=0.8]{images/abstract-architecture.png}
 \label{fig:abstract-architecture}
+\caption*{Fonte: Elaborado pelo autor (2023).}
 \end{figure}
 
 O Contêiner é a abstração da nossa aplicação com estado, que é o cerne deste trabalho
@@ -166,9 +167,10 @@ no Kubernetes. Representamos a arquitetura em Kubernetes na Figura
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.46]{images/kubernetes-architecture.png}
 \caption{Representação da arquitetura da solução no Kubernetes.}
+\includegraphics[scale=0.46]{images/kubernetes-architecture.png}
 \label{fig:kubernetes-architecture}
+\caption*{Fonte: Elaborado pelo autor (2023).}
 \end{figure}
 
 O Contêiner da aplicação será implantado a partir de um Deployment do Kubernetes, isto
@@ -207,9 +209,10 @@ usuário que a solicitou.
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.72]{images/interceptor-intercept.png}
 \caption{Diagrama de sequência da interceptação de requisição pelo Interceptor.}
+\includegraphics[scale=0.72]{images/interceptor-intercept.png}
 \label{fig:interceptor-request-interception}
+\caption*{Fonte: Elaborado pelo autor (2023).}
 \end{figure}
 
 Agora para o fluxo de salvamento de uma imagem do contexto de estado da aplicação temos a
@@ -241,8 +244,9 @@ momentaneamente.
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.72]{images/interceptor-checkpoint.png}
 \caption{Diagrama de sequência do salvamento de imagem feito pelo Interceptor.}
+\includegraphics[scale=0.72]{images/interceptor-checkpoint.png}
+\caption*{Fonte: Elaborado pelo autor (2023).}
 \label{fig:interceptor-checkpoint}
 \end{figure}
 
